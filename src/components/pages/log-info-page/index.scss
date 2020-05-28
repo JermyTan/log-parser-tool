@@ -1,0 +1,12 @@
+.log-info-header {
+  margin: 2rem 0 !important;
+}
+
+.log-info-loader:before {
+  background: transparent !important;
+}
+
+.log-info-loader:after {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  border-top-color: white !important;
+}

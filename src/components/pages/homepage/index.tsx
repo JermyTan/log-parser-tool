@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
 import {
   Container,
   Segment,
@@ -7,6 +8,7 @@ import {
   Icon,
   Header,
 } from "semantic-ui-react";
+import { URL_QUERY } from "../../../utils/constants";
 import "./index.scss";
 
 function Homepage() {
@@ -15,12 +17,30 @@ function Homepage() {
   const [requestorId, setRequestorId] = useState("");
   const [gfsToken, setGfsToken] = useState("");
   const [loading, setLoading] = useState(false);
+  const history = useHistory();
 
   const allFieldsFilled = () =>
     gfsServerUrl !== "" &&
     gfsFilename !== "" &&
     requestorId !== "" &&
     gfsToken !== "";
+
+  const withHttp = (url: string) =>
+    url.replace(/^(?:(.*:)?\/\/)?(.*)/i, (match, schemma, nonSchemmaUrl) =>
+      schemma ? match : `http://${nonSchemmaUrl}`
+    );
+
+  const onProcess = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      history.push(
+        `/log?${URL_QUERY}=${withHttp(
+          gfsServerUrl
+        )}/download/${gfsFilename}?userid=${requestorId}%26token=${gfsToken}`
+      );
+    }, 1000);
+  };
 
   return (
     <main className="homepage">
@@ -34,27 +54,27 @@ function Homepage() {
                   required
                   placeholder="https://f.haiserve.com"
                   value={gfsServerUrl}
-                  onChange={(event, data) => setGfsServerUrl(data.value)}
+                  onChange={(event, data) => setGfsServerUrl(data.value.trim())}
                 />
                 <Form.Input
                   label="GFS Filename"
                   required
                   placeholder="6ba213f000..."
                   value={gfsFilename}
-                  onChange={(event, data) => setGfsFilename(data.value)}
+                  onChange={(event, data) => setGfsFilename(data.value.trim())}
                 />
                 <Form.Input
                   label="Requestor's SeaTalk User ID"
                   required
                   placeholder="12345"
                   value={requestorId}
-                  onChange={(event, data) => setRequestorId(data.value)}
+                  onChange={(event, data) => setRequestorId(data.value.trim())}
                 />
                 <Form.Input
                   label="GFS Token"
                   required
                   value={gfsToken}
-                  onChange={(event, data) => setGfsToken(data.value)}
+                  onChange={(event, data) => setGfsToken(data.value.trim())}
                 />
                 <Form.Button
                   primary
@@ -62,10 +82,7 @@ function Homepage() {
                   fluid
                   disabled={!allFieldsFilled()}
                   loading={loading}
-                  onClick={() => {
-                    setLoading(true);
-                    setTimeout(() => setLoading(false), 1000);
-                  }}
+                  onClick={onProcess}
                 />
               </Form>
             </Grid.Column>
