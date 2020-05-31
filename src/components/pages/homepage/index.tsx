@@ -11,6 +11,11 @@ import {
 import { URL_QUERY } from "../../../utils/constants";
 import "./index.scss";
 
+const withHttp = (url: string) =>
+  url.replace(/^(?:(.*:)?\/\/)?(.*)/i, (match, schemma, nonSchemmaUrl) =>
+    schemma ? match : `http://${nonSchemmaUrl}`
+  );
+
 function Homepage() {
   const [gfsServerUrl, setGfsServerUrl] = useState("");
   const [gfsFilename, setGfsFilename] = useState("");
@@ -25,17 +30,12 @@ function Homepage() {
     requestorId !== "" &&
     gfsToken !== "";
 
-  const withHttp = (url: string) =>
-    url.replace(/^(?:(.*:)?\/\/)?(.*)/i, (match, schemma, nonSchemmaUrl) =>
-      schemma ? match : `http://${nonSchemmaUrl}`
-    );
-
   const onProcess = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       history.push(
-        `/log?${URL_QUERY}=${withHttp(
+        `/logs?${URL_QUERY}=${withHttp(
           gfsServerUrl
         )}/download/${gfsFilename}?userid=${requestorId}%26token=${gfsToken}`
       );

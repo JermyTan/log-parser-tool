@@ -10,3 +10,15 @@
   border-color: rgba(255, 255, 255, 0.15) !important;
   border-top-color: white !important;
 }
+
+.log-info-tab {
+  margin-bottom: 2rem;
+}
+
+.log-info-pane {
+  height: 40rem;
+}
+
+body ::-webkit-scrollbar {
+  background-color: white;
+}

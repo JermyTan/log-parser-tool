@@ -15,7 +15,7 @@ function App() {
       <Router>
         <Switch>
           <Route exact path="/" component={Homepage} />
-          <Route exact path="/log" component={LogInfoPage} />
+          <Route exact path="/logs" component={LogInfoPage} />
           <Route>
             <Redirect to="/" />
           </Route>
