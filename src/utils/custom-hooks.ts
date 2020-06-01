@@ -5,11 +5,6 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 import arrayBufferToBuffer from "arraybuffer-to-buffer";
 
-type LoadingState = {
-  loading: boolean;
-  pendingLoads: number;
-};
-
 function decrypt(data: string) {
   if (data.startsWith("{")) {
     data = JSON.parse(data).content;
@@ -22,11 +17,8 @@ export function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-export function useLogs(): [LoadingState, boolean, any] {
-  const [loadingState, setLoadingState] = useState<LoadingState>({
-    loading: false,
-    pendingLoads: 0,
-  });
+export function useLogs(): [boolean, boolean, any] {
+  const [loading, setLoading] = useState(true);
   const [invalid, setInvalid] = useState(false);
   const [logs, setLogs] = useState<any>({});
   const query = useQuery();
@@ -35,7 +27,6 @@ export function useLogs(): [LoadingState, boolean, any] {
     const url = query.get(URL_QUERY);
     console.log(url);
     if (url) {
-      setLoadingState({ ...loadingState, loading: true });
       axios
         .get(`https://cors-anywhere.herokuapp.com/${url}`, {
           responseType: "arraybuffer",
@@ -47,40 +38,33 @@ export function useLogs(): [LoadingState, boolean, any] {
             .sort((a, b) => a.name.localeCompare(b.name));
 
           const results: any = {};
-          var pendingLoads = 0;
           zipEntries.forEach((value) => {
             const fileName = value.name.endsWith(".gg")
               ? value.name.replace(".gg", ".log")
               : value.name;
-            pendingLoads += 1;
-            setLoadingState({
-              ...loadingState,
-              pendingLoads: pendingLoads,
-            });
+            results[fileName] = undefined;
+
             zip.readAsTextAsync(value, (data) => {
               if (value.name.endsWith(".gg")) {
                 data = decrypt(data);
               }
               results[fileName] = data;
-              pendingLoads -= 1;
               setLogs({ ...results });
-              setLoadingState({
-                ...loadingState,
-                pendingLoads: pendingLoads,
-              });
               console.log("Number of lines:", data.split("\n").length);
               console.log(results);
             });
           });
+          setLogs({ ...results });
         })
         .catch(() => setInvalid(true))
-        .finally(() => setLoadingState({ ...loadingState, loading: false }));
+        .finally(() => setLoading(false));
     } else {
       setInvalid(true);
+      setLoading(false);
     }
   }, []);
 
-  return [loadingState, invalid, logs];
+  return [loading, invalid, logs];
 }
 
 /*

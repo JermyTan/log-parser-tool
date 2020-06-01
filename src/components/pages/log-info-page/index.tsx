@@ -5,13 +5,18 @@ import { LazyLog } from "../../lazy-log/components";
 import "./index.scss";
 
 function LogInfoPage() {
-  const [loadingState, invalid, logs] = useLogs();
+  const [loading, invalid, logs] = useLogs();
 
   const panes = Object.entries(logs).map(([key, value]) => {
     return {
       menuItem: key,
       pane: (
-        <Tab.Pane key={key} className="log-info-pane" attached={false}>
+        <Tab.Pane
+          key={key}
+          className="log-info-pane"
+          attached={false}
+          loading={value === undefined}
+        >
           {value && (
             <LazyLog
               extraLines={1}
@@ -26,15 +31,12 @@ function LogInfoPage() {
     };
   });
 
-  console.log(loadingState);
   return (
     <main>
       <Container className="log-info-container">
         <h1 className="log-info-header">Logs</h1>
 
-        {!invalid &&
-        !loadingState.loading &&
-        loadingState.pendingLoads === 0 ? (
+        {!invalid && !loading ? (
           <Tab
             className="log-info-tab"
             menu={{
@@ -52,8 +54,7 @@ function LogInfoPage() {
             placeholder
             content={invalid ? "Invalid logs" : ""}
             textAlign="center"
-            loading={loadingState.loading || loadingState.pendingLoads > 0}
-            raised
+            loading={loading}
           />
         )}
       </Container>
