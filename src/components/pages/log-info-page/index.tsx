@@ -5,18 +5,13 @@ import { LazyLog } from "../../lazy-log/components";
 import "./index.scss";
 
 function LogInfoPage() {
-  const [loading, invalid, logs] = useLogs();
+  const [loadingState, invalid, logs] = useLogs();
 
   const panes = Object.entries(logs).map(([key, value]) => {
     return {
       menuItem: key,
-      render: () => (
-        <Tab.Pane
-          className="log-info-pane"
-          attached={false}
-          loading={value === undefined}
-          style={{ color: "black" }}
-        >
+      pane: (
+        <Tab.Pane key={key} className="log-info-pane" attached={false}>
           {value && (
             <LazyLog
               extraLines={1}
@@ -31,12 +26,15 @@ function LogInfoPage() {
     };
   });
 
+  console.log(loadingState);
   return (
     <main>
       <Container className="log-info-container">
-        <h1 className="log-info-header">Log Information</h1>
+        <h1 className="log-info-header">Logs</h1>
 
-        {!invalid && !loading ? (
+        {!invalid &&
+        !loadingState.loading &&
+        loadingState.pendingLoads === 0 ? (
           <Tab
             className="log-info-tab"
             menu={{
@@ -44,6 +42,7 @@ function LogInfoPage() {
               size: "large",
             }}
             panes={panes}
+            renderActiveOnly={false}
           />
         ) : (
           <Segment
@@ -51,9 +50,9 @@ function LogInfoPage() {
             size="massive"
             basic
             placeholder
-            content={invalid ? "Invalid log" : ""}
+            content={invalid ? "Invalid logs" : ""}
             textAlign="center"
-            loading={loading}
+            loading={loadingState.loading || loadingState.pendingLoads > 0}
             raised
           />
         )}
