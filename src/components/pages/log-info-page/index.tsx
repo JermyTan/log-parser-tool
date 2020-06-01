@@ -1,5 +1,5 @@
 import React from "react";
-import { Container, Segment, Tab } from "semantic-ui-react";
+import { Container, Segment, Tab, Loader } from "semantic-ui-react";
 import { useLogs } from "../../../utils/custom-hooks";
 import { LazyLog } from "../../lazy-log/components";
 import "./index.scss";
@@ -47,15 +47,18 @@ function LogInfoPage() {
             renderActiveOnly={false}
           />
         ) : (
-          <Segment
-            className="log-info-loader"
-            size="massive"
-            basic
-            placeholder
-            content={invalid ? "Invalid logs" : ""}
-            textAlign="center"
-            loading={loading}
-          />
+          <Segment basic placeholder textAlign="center">
+            {loading && (
+              <Loader
+                size="massive"
+                active
+                className="log-info-loader"
+                inline
+                content="Loading log files"
+              />
+            )}
+            {invalid && <h2>Invalid logs</h2>}
+          </Segment>
         )}
       </Container>
     </main>
