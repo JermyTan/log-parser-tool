@@ -1,11 +1,13 @@
-import React from "react";
-import { Container, Segment, Tab, Loader } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Container, Segment, Tab, Loader, Icon } from "semantic-ui-react";
 import { useLogs } from "../../../utils/custom-hooks";
 import { LazyLog } from "../../lazy-log/components";
+import Fullscreen from "react-full-screen";
 import "./index.scss";
 
 function LogInfoPage() {
   const [loading, invalid, logs] = useLogs();
+  const [fullscreen, setFullscreen] = useState(false);
 
   const panes = Object.entries(logs).map(([key, value]) => {
     return {
@@ -17,7 +19,7 @@ function LogInfoPage() {
           attached={false}
           loading={value === undefined}
         >
-          {value && (
+          {value ? (
             <LazyLog
               extraLines={1}
               enableSearch
@@ -25,6 +27,8 @@ function LogInfoPage() {
               caseInsensitive
               selectableLines
             />
+          ) : (
+            <h2 className="log-info-empty-log-label">Empty log file</h2>
           )}
         </Tab.Pane>
       ),
@@ -37,15 +41,29 @@ function LogInfoPage() {
         <h1 className="log-info-header">Logs</h1>
 
         {!invalid && !loading ? (
-          <Tab
-            className="log-info-tab"
-            menu={{
-              attached: false,
-              size: "large",
-            }}
-            panes={panes}
-            renderActiveOnly={false}
-          />
+          <Fullscreen
+            enabled={fullscreen}
+            onChange={(fullscreen) => setFullscreen(fullscreen)}
+          >
+            <div className="log-info-fullscreen">
+              <Icon
+                name={fullscreen ? "compress" : "expand"}
+                link
+                onClick={() => setFullscreen(!fullscreen)}
+                size="large"
+              />
+            </div>
+
+            <Tab
+              className="log-info-tab"
+              menu={{
+                attached: false,
+                size: "large",
+              }}
+              panes={panes}
+              renderActiveOnly={false}
+            />
+          </Fullscreen>
         ) : (
           <Segment basic placeholder textAlign="center">
             {loading && (

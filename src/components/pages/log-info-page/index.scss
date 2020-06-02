@@ -1,5 +1,11 @@
 .log-info-header {
-  margin: 2rem 0 !important;
+  margin: 2rem 0 1rem 0 !important;
+}
+
+.log-info-fullscreen {
+  display: flex;
+  margin: 1rem 0;
+  justify-content: flex-end;
 }
 
 .log-info-loader:before {
@@ -16,7 +22,12 @@
 }
 
 .log-info-pane {
-  height: 40rem;
+  height: 85vh;
+  color: black;
+}
+
+.log-info-empty-log-label {
+  text-align: center;
 }
 
 body ::-webkit-scrollbar {

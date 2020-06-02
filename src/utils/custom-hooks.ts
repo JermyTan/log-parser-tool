@@ -40,7 +40,7 @@ export function useLogs(): [boolean, boolean, any] {
           const results: any = {};
           zipEntries.forEach((value) => {
             const fileName = value.name.endsWith(".gg")
-              ? value.name.replace(".gg", ".log")
+              ? value.name.replace(".gg", ".json")
               : value.name;
             results[fileName] = undefined;
 
