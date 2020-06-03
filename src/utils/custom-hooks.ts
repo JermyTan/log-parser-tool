@@ -10,7 +10,8 @@ function decrypt(data: string) {
     data = JSON.parse(data).content;
   }
   const decrypted = unescape(Buffer.from(data, "base64").toString());
-  return JSON.stringify(JSON.parse(decrypted), null, 2);
+  //return JSON.stringify(JSON.parse(decrypted), null, 2);
+  return JSON.parse(decrypted);
 }
 
 export function useQuery() {
@@ -48,9 +49,12 @@ export function useLogs(): [boolean, boolean, any] {
               if (value.name.endsWith(".gg")) {
                 data = decrypt(data);
               }
+              if (value.name.endsWith(".json")) {
+                data = JSON.parse(data);
+              }
               results[fileName] = data;
               setLogs({ ...results });
-              console.log("Number of lines:", data.split("\n").length);
+              //console.log("Number of lines:", data.split("\n").length);
               console.log(results);
             });
           });
