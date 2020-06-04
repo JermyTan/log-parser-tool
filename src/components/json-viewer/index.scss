@@ -1,3 +1,9 @@
+.json-viewer-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .json-viewer-action-buttons {
   display: flex;
   flex-direction: row;

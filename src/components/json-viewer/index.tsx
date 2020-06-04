@@ -30,11 +30,11 @@ type Props = {
 
 function JsonViewer(props: Props) {
   return (
-    <>
-      {/*<div className="json-viewer-action-buttons">
+    <div className="json-viewer-container">
+      <div className="json-viewer-action-buttons">
         <Button content="Filter" primary compact />
         <Button content="Reset" color="red" compact />
-      </div>*/}
+      </div>
       <JSONTree
         data={props.data}
         invertTheme={false}
@@ -43,14 +43,15 @@ function JsonViewer(props: Props) {
           tree: {
             margin: 0,
             overflow: "auto",
-            height: "100%",
             whiteSpace: "nowrap",
             padding: "0.5rem 0 1rem 1rem",
+            flexGrow: 1,
+            backgroundColor: "#222222",
           },
         }}
         shouldExpandNode={() => true}
       />
-    </>
+    </div>
   );
 }
 
