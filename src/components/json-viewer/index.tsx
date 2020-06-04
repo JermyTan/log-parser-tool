@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "semantic-ui-react";
 import JSONTree from "react-json-tree";
+import FilterButton from "../filter-button";
 import "./index.scss";
 
 const theme = {
@@ -32,7 +33,7 @@ function JsonViewer(props: Props) {
   return (
     <div className="json-viewer-container">
       <div className="json-viewer-action-buttons">
-        <Button content="Filter" primary compact />
+        <FilterButton />
         <Button content="Reset" color="red" compact />
       </div>
       <JSONTree
