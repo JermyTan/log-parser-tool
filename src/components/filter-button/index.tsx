@@ -13,7 +13,7 @@ type Props = {
 };
 
 function FilterButton({ filename }: Props) {
-  const { file, updateFilters } = useContext(FilterContext);
+  const { getFilters, updateFilters } = useContext(FilterContext);
   const [openFilterOptions, setOpenFilterOptions] = useState(false);
   const [filters, setFilters] = useState<Filter[]>([]);
 
@@ -65,6 +65,12 @@ function FilterButton({ filename }: Props) {
     setFilters(filtersCopy);
   };
 
+  const handleApply = () => {
+    const filteredResults = filters.filter((value) => !!value.searchGroup);
+    updateFilters(filename, filteredResults);
+    setOpenFilterOptions(false);
+  };
+
   return (
     <>
       <Button
@@ -76,7 +82,7 @@ function FilterButton({ filename }: Props) {
       <TransitionablePortal
         open={openFilterOptions}
         transition={{ animation: "fade" }}
-        onOpen={() => setFilters(file[filename] ?? [])}
+        onOpen={() => setFilters(getFilters(filename))}
       >
         <Modal open={true} onClose={() => setOpenFilterOptions(false)}>
           <Modal.Header className="filter-options-header">
@@ -111,14 +117,7 @@ function FilterButton({ filename }: Props) {
               content="Back"
               onClick={() => setOpenFilterOptions(false)}
             />
-            <Button
-              primary
-              content="Apply"
-              onClick={() => {
-                setOpenFilterOptions(false);
-                updateFilters(filename, filters);
-              }}
-            />
+            <Button primary content="Apply" onClick={handleApply} />
           </Modal.Actions>
         </Modal>
       </TransitionablePortal>

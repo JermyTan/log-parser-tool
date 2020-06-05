@@ -16,12 +16,12 @@ type FileFilter = {
 };
 
 type FilterContextType = {
-  file: FileFilter;
+  getFilters: (filename: string) => Filter[];
   updateFilters: (filename: string, filters: Filter[]) => void;
 };
 
 export const FilterContext = createContext<FilterContextType>({
-  file: {},
+  getFilters: (filename: string) => [],
   updateFilters: (filename: string, filters: Filter[]) => {},
 });
 
@@ -33,7 +33,7 @@ function FilterProvider(props: any) {
   return (
     <FilterContext.Provider
       value={{
-        file: file,
+        getFilters: (filename: string) => file[filename] ?? [],
         updateFilters: (filename: string, filters: Filter[]) => {
           setFile({ ...file, [filename]: filters });
         },
