@@ -10,14 +10,15 @@ import "./index.scss";
 
 type Props = {
   filename: string;
+  applyFilter: () => void;
 };
 
-function FilterButton({ filename }: Props) {
+function FilterButton({ filename, applyFilter }: Props) {
   const { getFilters, updateFilters } = useContext(FilterContext);
   const [openFilterOptions, setOpenFilterOptions] = useState(false);
   const [filters, setFilters] = useState<Filter[]>([]);
 
-  const addFilter = (filter: Filter = { searchGroup: "", searchTerms: [] }) => {
+  const addFilter = (filter: Filter = { searchGroup: [], searchTerms: [] }) => {
     setFilters(filters.concat(filter));
   };
 
@@ -31,7 +32,7 @@ function FilterButton({ filename }: Props) {
     const changedFilter = filters[filterIndex];
     const changedFilterCopy: Filter = {
       ...changedFilter,
-      searchGroup: newSearchGroup,
+      searchGroup: newSearchGroup ? newSearchGroup.split(".") : [],
     };
 
     const filtersCopy = [...filters];
@@ -66,8 +67,11 @@ function FilterButton({ filename }: Props) {
   };
 
   const handleApply = () => {
-    const filteredResults = filters.filter((value) => !!value.searchGroup);
+    const filteredResults = filters.filter(
+      (filter) => filter.searchGroup.length > 0 || filter.searchTerms.length > 0
+    );
     updateFilters(filename, filteredResults);
+    applyFilter();
     setOpenFilterOptions(false);
   };
 

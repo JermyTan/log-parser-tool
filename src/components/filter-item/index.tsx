@@ -32,14 +32,14 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
             <Input
               label="root."
               placeholder="history.*"
-              value={searchGroup}
+              value={searchGroup.join(".")}
               onChange={(event, data) =>
                 setSearchGroup(filterIndex, data.value.trim())
               }
               disabled={searchTerms.length > 0}
               icon={
                 <Transition
-                  visible={!!searchGroup}
+                  visible={!!searchGroup?.[0]}
                   unmountOnHide
                   animation="scale"
                 >
@@ -83,7 +83,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
           <Form.Field className="filter-item-field">
             <label>Key Path</label>
             <Input
-              label={`root.${searchGroup ? searchGroup + "." : ""}`}
+              label={`root.${searchGroup.join(".")}`}
               placeholder="action.type"
               value={keyPath}
               onChange={(event, data) => setKeyPath(data.value.trim())}
@@ -119,7 +119,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
             content="Add"
             onClick={() => {
               addSearchTerm(filterIndex, {
-                keyPath: keyPath,
+                keyPath: keyPath.split("."),
                 value: value.trim(),
                 partialValueSearch: partialValueSearch,
               });

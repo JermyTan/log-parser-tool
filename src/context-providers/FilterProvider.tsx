@@ -1,13 +1,13 @@
 import React, { createContext, useState } from "react";
 
 export type SearchTerm = {
-  keyPath: string;
+  keyPath: string[];
   value: any;
   partialValueSearch: boolean;
 };
 
 export type Filter = {
-  searchGroup: string;
+  searchGroup: string[];
   searchTerms: SearchTerm[];
 };
 

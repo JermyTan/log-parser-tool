@@ -8,7 +8,7 @@ type Props = {
   filterIndex: number;
   searchTermIndex: number;
   searchTerm: SearchTerm;
-  searchGroup: string;
+  searchGroup: string[];
 };
 
 function SearchTermItem({
@@ -20,8 +20,8 @@ function SearchTermItem({
 }: Props) {
   const { keyPath, value, partialValueSearch } = searchTerm;
 
-  const lhs = ["root", searchGroup, keyPath];
-  !searchGroup && lhs.splice(1, 1);
+  const lhs = ["root", searchGroup.join("."), keyPath.join(".")];
+  searchGroup.length === 0 && lhs.splice(1, 1);
 
   return (
     <Label

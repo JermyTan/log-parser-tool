@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { Button } from "semantic-ui-react";
 import JSONTree from "react-json-tree";
 import FilterButton from "../filter-button";
+import { FilterContext } from "../../context-providers/FilterProvider";
+import flatten from "flat";
 import "./index.scss";
 
 const theme = {
@@ -31,11 +33,48 @@ type Props = {
 };
 
 function JsonViewer({ filename, data }: Props) {
+  const { getFilters } = useContext(FilterContext);
+  const filters = getFilters(filename);
+  const [isFiltering, setFiltering] = useState(false);
+  const activeFilter = isFiltering && filters.length > 0;
+
+  const renderJson = (): any => {
+    if (!activeFilter) {
+      return data;
+    } else {
+      const result: object = {};
+
+      const flattenData: object = flatten(data);
+      Object.entries(flattenData).forEach(([key, value]) => {
+        const path = key.split(".");
+        const numComponents = path.length;
+
+        filters.forEach((filter) => {
+          const searchGroup = filter.searchGroup;
+          if (searchGroup.length > numComponents) {
+            return;
+          }
+        });
+      });
+    }
+  };
+
+  console.log(filters.length);
+
   return (
     <div className="json-viewer-container">
       <div className="json-viewer-action-buttons">
-        <FilterButton filename={filename} />
-        <Button content="Reset" color="red" compact />
+        <FilterButton
+          filename={filename}
+          applyFilter={() => setFiltering(true)}
+        />
+        <Button
+          content="Reset"
+          color="red"
+          compact
+          disabled={!activeFilter}
+          onClick={() => setFiltering(false)}
+        />
       </div>
       <JSONTree
         data={data}
