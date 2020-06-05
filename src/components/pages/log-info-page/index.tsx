@@ -37,7 +37,7 @@ function LogInfoPage() {
                 selectableLines
               />
             ) : (
-              <JsonViewer data={value as object} />
+              <JsonViewer filename={key} data={value as object} />
             )
           ) : (
             <h2 className="log-info-empty-log-label">Empty log file</h2>

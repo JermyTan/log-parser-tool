@@ -1,9 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Button, Modal, TransitionablePortal, Popup } from "semantic-ui-react";
+import {
+  FilterContext,
+  Filter,
+  SearchTerm,
+} from "../../context-providers/FilterProvider";
+import FilterItemList from "../filter-item-list";
 import "./index.scss";
 
-function FilterButton() {
+type Props = {
+  filename: string;
+};
+
+function FilterButton({ filename }: Props) {
+  const { file, updateFilters } = useContext(FilterContext);
   const [openFilterOptions, setOpenFilterOptions] = useState(false);
+  const [filters, setFilters] = useState<Filter[]>([]);
+
+  const addFilter = (filter: Filter = { searchGroup: "", searchTerms: [] }) => {
+    setFilters(filters.concat(filter));
+  };
+
+  const removeFilter = (filterIndex: number) => {
+    const filtersCopy = [...filters];
+    filtersCopy.splice(filterIndex, 1);
+    setFilters(filtersCopy);
+  };
+
+  const setSearchGroup = (filterIndex: number, newSearchGroup: string) => {
+    const changedFilter = filters[filterIndex];
+    const changedFilterCopy: Filter = {
+      ...changedFilter,
+      searchGroup: newSearchGroup,
+    };
+
+    const filtersCopy = [...filters];
+    filtersCopy[filterIndex] = changedFilterCopy;
+    setFilters(filtersCopy);
+  };
+
+  const addSearchTerm = (filterIndex: number, searchTerm: SearchTerm) => {
+    const changedFilter = filters[filterIndex];
+    const changedFilterCopy: Filter = {
+      ...changedFilter,
+      searchTerms: changedFilter.searchTerms.concat(searchTerm),
+    };
+
+    const filtersCopy = [...filters];
+    filtersCopy[filterIndex] = changedFilterCopy;
+    setFilters(filtersCopy);
+  };
+
+  const removeSearchTerm = (filterIndex: number, searchTermIndex: number) => {
+    const changedFilter = filters[filterIndex];
+    const searchTermsCopy = [...changedFilter.searchTerms];
+    searchTermsCopy.splice(searchTermIndex, 1);
+    const changedFilterCopy: Filter = {
+      ...changedFilter,
+      searchTerms: searchTermsCopy,
+    };
+
+    const filtersCopy = [...filters];
+    filtersCopy[filterIndex] = changedFilterCopy;
+    setFilters(filtersCopy);
+  };
 
   return (
     <>
@@ -16,6 +76,7 @@ function FilterButton() {
       <TransitionablePortal
         open={openFilterOptions}
         transition={{ animation: "fade" }}
+        onOpen={() => setFilters(file[filename] ?? [])}
       >
         <Modal open={true} onClose={() => setOpenFilterOptions(false)}>
           <Modal.Header className="filter-options-header">
@@ -24,14 +85,26 @@ function FilterButton() {
               <Popup
                 content="Add filter"
                 trigger={
-                  <Button color="teal" icon="plus" compact floated="right" />
+                  <Button
+                    color="teal"
+                    icon="plus"
+                    onClick={() => addFilter()}
+                  />
                 }
                 position="top center"
               />
             </span>
           </Modal.Header>
           <Modal.Content>
-            <Modal.Description>Inputs</Modal.Description>
+            <FilterItemList
+              filters={filters}
+              filterActions={{
+                removeFilter: removeFilter,
+                setSearchGroup: setSearchGroup,
+                addSearchTerm: addSearchTerm,
+                removeSearchTerm: removeSearchTerm,
+              }}
+            />
           </Modal.Content>
           <Modal.Actions>
             <Button
@@ -41,7 +114,10 @@ function FilterButton() {
             <Button
               primary
               content="Apply"
-              onClick={() => setOpenFilterOptions(false)}
+              onClick={() => {
+                setOpenFilterOptions(false);
+                updateFilters(filename, filters);
+              }}
             />
           </Modal.Actions>
         </Modal>

@@ -4,10 +4,13 @@ import "./index.scss";
 import "semantic-ui-css/semantic.min.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
+import FilterProvider from "./context-providers/FilterProvider";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <FilterProvider>
+      <App />
+    </FilterProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

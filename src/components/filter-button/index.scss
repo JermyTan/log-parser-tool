@@ -1,2 +1,11 @@
 .filter-options-header {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ui.fullscreen.modal {
+  left: 2.5% !important;
 }

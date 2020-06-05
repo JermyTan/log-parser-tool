@@ -26,18 +26,19 @@ const theme = {
 };
 
 type Props = {
+  filename: string;
   data: {} | [any];
 };
 
-function JsonViewer(props: Props) {
+function JsonViewer({ filename, data }: Props) {
   return (
     <div className="json-viewer-container">
       <div className="json-viewer-action-buttons">
-        <FilterButton />
+        <FilterButton filename={filename} />
         <Button content="Reset" color="red" compact />
       </div>
       <JSONTree
-        data={props.data}
+        data={data}
         invertTheme={false}
         theme={{
           extend: theme,
