@@ -1,0 +1,18 @@
+.search-terms-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.and-separator {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.search-terms-list-container {
+  width: 100%;
+}

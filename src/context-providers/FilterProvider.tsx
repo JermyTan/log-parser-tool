@@ -4,6 +4,7 @@ export type SearchTerm = {
   keyPath: string[];
   value: any;
   partialValueSearch: boolean;
+  caseSensitiveValueSearch: boolean;
 };
 
 export type Filter = {

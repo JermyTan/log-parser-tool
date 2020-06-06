@@ -17,14 +17,14 @@ type Props = {
 };
 
 function FilterItemList({ filters, filterActions }: Props) {
-  const list = filters.flatMap((value, index) => [
+  const list = filters.flatMap((filter, index) => [
     <FilterItem
       key={index * 2}
-      filter={value}
+      filter={filter}
       filterIndex={index}
       filterActions={filterActions}
     />,
-    <Divider key={index * 2 + 1} horizontal content="Or" />,
+    <Divider key={index * 2 + 1} horizontal content="OR" />,
   ]);
   list.pop();
 

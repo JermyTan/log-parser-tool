@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Form, Input, Popup, Label, Transition, Icon } from "semantic-ui-react";
 import { Filter } from "../../context-providers/FilterProvider";
 import { FilterActions } from "../filter-item-list";
-import SearchTermItem from "../search-term-item";
+import SearchTermItemList from "../search-term-item-list";
 import "./index.scss";
 
 type Props = {
@@ -22,6 +22,9 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
   const [keyPath, setKeyPath] = useState("");
   const [value, setValue] = useState("");
   const [partialValueSearch, setPartialValueSearch] = useState(false);
+  const [caseSensitiveValueSearch, setCaseSensitiveValueSearch] = useState(
+    false
+  );
 
   return (
     <div className="filter-item-container">
@@ -66,18 +69,14 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
           />
         </Form.Group>
       </Form>
-      <div className="filter-item-search-terms-container">
-        {searchTerms.map((value, index) => (
-          <SearchTermItem
-            key={index}
-            searchTerm={value}
-            filterIndex={filterIndex}
-            searchTermIndex={index}
-            removeSearchTerm={removeSearchTerm}
-            searchGroup={searchGroup}
-          />
-        ))}
-      </div>
+
+      <SearchTermItemList
+        searchTerms={searchTerms}
+        filterIndex={filterIndex}
+        searchGroup={searchGroup}
+        removeSearchTerm={removeSearchTerm}
+      />
+
       <Form>
         <Form.Group className="filter-item-inputs-container">
           <Form.Field className="filter-item-field">
@@ -118,12 +117,14 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
 
         <Form.Group className="filter-item-actions-container">
           <Form.Button
+            className="filter-item-action"
             content="Add"
             onClick={() => {
               addSearchTerm(filterIndex, {
                 keyPath: keyPath.split("."),
                 value: value.trim(),
-                partialValueSearch: partialValueSearch,
+                partialValueSearch,
+                caseSensitiveValueSearch,
               });
               setKeyPath("");
               setValue("");
@@ -134,10 +135,21 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
           />
 
           <Form.Radio
+            className="filter-item-action"
             label="Allow partial value search"
             toggle
             checked={partialValueSearch}
             onChange={() => setPartialValueSearch(!partialValueSearch)}
+          />
+
+          <Form.Radio
+            className="filter-item-action"
+            label="Allow case-sensitive value search"
+            toggle
+            checked={caseSensitiveValueSearch}
+            onChange={() =>
+              setCaseSensitiveValueSearch(!caseSensitiveValueSearch)
+            }
           />
         </Form.Group>
       </Form>

@@ -18,7 +18,12 @@ function SearchTermItem({
   removeSearchTerm,
   searchGroup,
 }: Props) {
-  const { keyPath, value, partialValueSearch } = searchTerm;
+  const {
+    keyPath,
+    value,
+    partialValueSearch,
+    caseSensitiveValueSearch,
+  } = searchTerm;
 
   const lhs = ["root", searchGroup.join("."), keyPath.join(".")];
   searchGroup.length === 0 && lhs.splice(1, 1);
@@ -27,6 +32,7 @@ function SearchTermItem({
     <Label
       className="search-term-item"
       color={partialValueSearch ? "brown" : "grey"}
+      basic={caseSensitiveValueSearch}
     >
       {lhs.join(".")} == {value}
       <Icon

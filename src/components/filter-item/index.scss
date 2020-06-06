@@ -10,13 +10,6 @@
   margin-bottom: 1rem !important;
 }
 
-.filter-item-search-terms-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
 .filter-item-inputs-container {
   display: flex;
   flex-direction: row;
@@ -28,8 +21,12 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  margin-bottom: 1rem !important;
+  margin-bottom: 0.5rem !important;
   align-items: center;
+}
+
+.filter-item-action {
+  margin-bottom: 0.5rem !important;
 }
 
 .filter-item-equals-container {
