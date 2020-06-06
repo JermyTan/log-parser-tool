@@ -3,7 +3,7 @@ import { Button } from "semantic-ui-react";
 import JSONTree from "react-json-tree";
 import FilterButton from "../filter-button";
 import { FilterContext } from "../../context-providers/FilterProvider";
-import flatten from "flat";
+import Queue from "queue-fifo";
 import "./index.scss";
 
 const theme = {
@@ -42,20 +42,113 @@ function JsonViewer({ filename, data }: Props) {
     if (!activeFilter) {
       return data;
     } else {
-      const result: object = {};
+      const result: any[] = [];
 
-      const flattenData: object = flatten(data);
-      Object.entries(flattenData).forEach(([key, value]) => {
-        const path = key.split(".");
+      filters.forEach((filter) => {
+        const queue = new Queue<{
+          node: any;
+          componentIndex: number;
+        }>();
+        const path = filter.searchGroup;
         const numComponents = path.length;
+        const candidateResults: any[] = [];
 
-        filters.forEach((filter) => {
-          const searchGroup = filter.searchGroup;
-          if (searchGroup.length > numComponents) {
-            return;
+        queue.enqueue({ node: data, componentIndex: 0 });
+
+        while (!queue.isEmpty()) {
+          let { node, componentIndex } = queue.dequeue() ?? {
+            node: {},
+            componentIndex: Number.POSITIVE_INFINITY,
+          };
+          if (componentIndex >= numComponents) {
+            break;
+          } else if (typeof node !== "object") {
+            continue;
           }
+
+          const currentComponent = path[componentIndex++];
+
+          let neighbours: any[];
+          if (currentComponent === "*") {
+            neighbours = Object.values(node);
+          } else {
+            const neighbour = node?.[currentComponent];
+            neighbours = neighbour ? [neighbour] : [];
+          }
+
+          neighbours.forEach((neighbour) => {
+            if (componentIndex >= numComponents) {
+              candidateResults.push(neighbour);
+            } else {
+              queue.enqueue({ node: neighbour, componentIndex });
+            }
+          });
+        }
+
+        console.log(candidateResults);
+
+        const searchTerms = filter.searchTerms;
+        const numSearchTerms = searchTerms.length;
+        candidateResults.forEach((candidateResult) => {
+          let numValidSearchTerms = 0;
+
+          searchTerms.forEach((searchTerm) => {
+            const queue = new Queue<{
+              node: any;
+              componentIndex: number;
+            }>();
+            const path = searchTerm.keyPath;
+            const numComponents = path.length;
+
+            queue.enqueue({ node: candidateResult, componentIndex: 0 });
+
+            while (!queue.isEmpty()) {
+              let { node, componentIndex } = queue.dequeue() ?? {
+                node: {},
+                componentIndex: Number.POSITIVE_INFINITY,
+              };
+
+              if (componentIndex === numComponents) {
+                if (typeof node === "object") {
+                  continue;
+                }
+
+                if (
+                  (searchTerm.partialValueSearch &&
+                    node.toString().includes(searchTerm.value)) ||
+                  node.toString() === searchTerm.value
+                ) {
+                  numValidSearchTerms++;
+                  return;
+                }
+
+                continue;
+              } else if (typeof node !== "object") {
+                continue;
+              }
+
+              const currentComponent = path[componentIndex++];
+
+              let neighbours: any[];
+              if (currentComponent === "*") {
+                neighbours = Object.values(node);
+              } else {
+                const neighbour = node?.[currentComponent];
+                neighbours = neighbour ? [neighbour] : [];
+              }
+
+              neighbours.forEach((neighbour) => {
+                queue.enqueue({ node: neighbour, componentIndex });
+              });
+            }
+          });
+
+          numValidSearchTerms === numSearchTerms &&
+            result.push(candidateResult);
         });
       });
+
+      return [...(new Set(result) as any)];
     }
   };
 
@@ -77,7 +170,7 @@ function JsonViewer({ filename, data }: Props) {
         />
       </div>
       <JSONTree
-        data={data}
+        data={renderJson()}
         invertTheme={false}
         theme={{
           extend: theme,

@@ -83,7 +83,9 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
           <Form.Field className="filter-item-field">
             <label>Key Path</label>
             <Input
-              label={`root.${searchGroup.join(".")}`}
+              label={`root.${searchGroup.join(".")}${
+                searchGroup.length > 0 ? "." : ""
+              }`}
               placeholder="action.type"
               value={keyPath}
               onChange={(event, data) => setKeyPath(data.value.trim())}
@@ -102,7 +104,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
           <Form.Field className="filter-item-field">
             <label>Value</label>
             <Input
-              placeholder='"NETWORK_WEB_SOCKET_CONNECTING"'
+              placeholder="NETWORK_WEB_SOCKET_CONNECTING"
               value={value}
               onChange={(event, data) => setValue(data.value)}
               icon={
