@@ -113,14 +113,18 @@ function JsonViewer({ filename, data }: Props) {
                   continue;
                 }
 
-                if (
-                  (searchTerm.partialValueSearch &&
-                    node.toString().includes(searchTerm.value)) ||
-                  node.toString() === searchTerm.value
-                ) {
-                  numValidSearchTerms++;
-                  return;
+                let sourceValue: string = node.toString();
+                let inputValue = searchTerm.value;
+
+                if (!searchTerm.caseSensitiveValueSearch) {
+                  sourceValue = sourceValue.toLowerCase();
+                  inputValue = inputValue.toLowerCase();
                 }
+
+                ((searchTerm.partialValueSearch &&
+                  sourceValue.includes(inputValue)) ||
+                  sourceValue === inputValue) &&
+                  numValidSearchTerms++;
 
                 continue;
               } else if (typeof node !== "object") {

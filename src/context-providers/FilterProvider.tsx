@@ -2,7 +2,7 @@ import React, { createContext, useState } from "react";
 
 export type SearchTerm = {
   keyPath: string[];
-  value: any;
+  value: string;
   partialValueSearch: boolean;
   caseSensitiveValueSearch: boolean;
 };
