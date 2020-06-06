@@ -22,7 +22,7 @@
 }
 
 .log-info-pane {
-  height: 85vh;
+  height: 84vh;
   color: black;
 }
 
@@ -32,4 +32,8 @@
 
 body ::-webkit-scrollbar {
   background-color: white;
+}
+
+.fullscreen {
+  overflow-y: auto;
 }

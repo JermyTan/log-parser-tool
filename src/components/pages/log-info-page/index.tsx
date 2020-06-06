@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext } from "react";
 import {
   Container,
   Segment,
@@ -11,11 +11,12 @@ import { useLogs } from "../../../utils/custom-hooks";
 import { LazyLog } from "../../lazy-log/components";
 import Fullscreen from "react-full-screen";
 import JsonViewer from "../../json-viewer";
+import { FullscreenContext } from "../../../context-providers/FullscreenProvider";
 import "./index.scss";
 
 function LogInfoPage() {
   const [loading, invalid, logs] = useLogs();
-  const [fullscreen, setFullscreen] = useState(false);
+  const { isFullscreen, setFullscreen } = useContext(FullscreenContext);
 
   const panes = Object.entries(logs).map(([key, value]) => {
     return {
@@ -54,17 +55,17 @@ function LogInfoPage() {
 
         {!invalid && !loading ? (
           <Fullscreen
-            enabled={fullscreen}
+            enabled={isFullscreen}
             onChange={(fullscreen) => setFullscreen(fullscreen)}
           >
             <div className="log-info-fullscreen">
               <Popup
-                content={fullscreen ? "Exit full screen" : "Full screen"}
+                content={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                 trigger={
                   <Icon
-                    name={fullscreen ? "compress" : "expand"}
+                    name={isFullscreen ? "compress" : "expand"}
                     link
-                    onClick={() => setFullscreen(!fullscreen)}
+                    onClick={() => setFullscreen(!isFullscreen)}
                     size="large"
                   />
                 }
