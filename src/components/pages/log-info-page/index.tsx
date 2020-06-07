@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Segment,
@@ -9,14 +9,15 @@ import {
 } from "semantic-ui-react";
 import { useLogs } from "../../../utils/custom-hooks";
 import { LazyLog } from "../../lazy-log/components";
-import Fullscreen from "react-full-screen";
+import Fullscreen from "../../fullscreen";
 import JsonViewer from "../../json-viewer";
-import { FullscreenContext } from "../../../context-providers/FullscreenProvider";
 import "./index.scss";
+
+const hiddenStyle: React.CSSProperties = { visibility: "hidden" };
 
 function LogInfoPage() {
   const [loading, invalid, logs] = useLogs();
-  const { isFullscreen, setFullscreen } = useContext(FullscreenContext);
+  const [isFullscreen, setFullscreen] = useState(false);
 
   const panes = Object.entries(logs).map(([key, value]) => {
     return {
@@ -51,13 +52,12 @@ function LogInfoPage() {
   return (
     <main>
       <Container className="log-info-container">
-        <h1 className="log-info-header">Logs</h1>
+        <h1 className="log-info-header" style={isFullscreen ? hiddenStyle : {}}>
+          Logs
+        </h1>
 
         {!invalid && !loading ? (
-          <Fullscreen
-            enabled={isFullscreen}
-            onChange={(fullscreen) => setFullscreen(fullscreen)}
-          >
+          <Fullscreen fullScreen={isFullscreen} allowScrollbar={true}>
             <div className="log-info-fullscreen">
               <Popup
                 content={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
@@ -69,6 +69,7 @@ function LogInfoPage() {
                     size="large"
                   />
                 }
+                basic
                 position="top center"
               />
             </div>
