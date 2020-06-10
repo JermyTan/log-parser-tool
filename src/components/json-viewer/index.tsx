@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Button } from "semantic-ui-react";
-import JSONTree from "react-json-tree";
+import JSONTree from "../json-tree";
 import FilterButton from "../filter-button";
 import { FilterContext } from "../../context-providers/FilterProvider";
 import Queue from "queue-fifo";
@@ -182,7 +182,7 @@ function JsonViewer({ filename, data }: Props) {
             margin: 0,
             overflow: "auto",
             whiteSpace: "nowrap",
-            padding: "0.5rem 0 1rem 1rem",
+            padding: "0 0 1rem 1rem",
             flexGrow: 1,
             backgroundColor: "#222222",
           },

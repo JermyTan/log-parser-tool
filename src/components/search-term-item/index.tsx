@@ -31,8 +31,8 @@ function SearchTermItem({
   return (
     <Label
       className="search-term-item"
-      color={partialValueSearch ? "brown" : "grey"}
-      basic={caseSensitiveValueSearch}
+      color={caseSensitiveValueSearch ? "brown" : "grey"}
+      basic={partialValueSearch}
     >
       {lhs.join(".")} == {value}
       <Icon

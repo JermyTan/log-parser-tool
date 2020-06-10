@@ -1672,13 +1672,6 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-json-tree@^0.6.11":
-  version "0.6.11"
-  resolved "https://registry.yarnpkg.com/@types/react-json-tree/-/react-json-tree-0.6.11.tgz#644eee18b1c772d57afe584b8098af71d847a15a"
-  integrity sha512-HP0Sf0ZHjCi1FHLJxh/pLaxaevEW6ILlV2C5Dn3EZFTkLjWkv+EVf/l/zvtmoU9ZwuO/3TKVeWK/700UDxunTw==
-  dependencies:
-    "@types/react" "*"
-
 "@types/react-lazylog@^4.5.0":
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/@types/react-lazylog/-/react-lazylog-4.5.0.tgz#1677ac520f29ada2e95b8cd5f8ec54b897227278"
@@ -2565,7 +2558,7 @@ babel-preset-react-app@^9.1.2:
     babel-plugin-macros "2.8.0"
     babel-plugin-transform-react-remove-prop-types "0.4.24"
 
-babel-runtime@^6.26.0, babel-runtime@^6.6.1:
+babel-runtime@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
   integrity sha1-llxwWGaOgrVde/4E/yM3vItWR/4=
@@ -9058,7 +9051,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.4"
 
-prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -9241,10 +9234,10 @@ react-app-polyfill@^1.0.6:
     regenerator-runtime "^0.13.3"
     whatwg-fetch "^3.0.0"
 
-react-base16-styling@^0.5.1:
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/react-base16-styling/-/react-base16-styling-0.5.3.tgz#3858f24e9c4dd8cbd3f702f3f74d581ca2917269"
-  integrity sha1-OFjyTpxN2MvT9wLz901YHKKRcmk=
+react-base16-styling@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/react-base16-styling/-/react-base16-styling-0.6.0.tgz#ef2156d66cf4139695c8a167886cb69ea660792c"
+  integrity sha1-7yFW1mz0E5aVyKFniGy2nqZgeSw=
   dependencies:
     base16 "^1.0.0"
     lodash.curry "^4.0.1"
@@ -9300,15 +9293,6 @@ react-is@^16.12.0, react-is@^16.6.0, react-is@^16.6.3, react-is@^16.7.0, react-i
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
-
-react-json-tree@^0.11.2:
-  version "0.11.2"
-  resolved "https://registry.yarnpkg.com/react-json-tree/-/react-json-tree-0.11.2.tgz#af70199fcbc265699ade2aec492465c51608f95e"
-  integrity sha512-aYhUPj1y5jR3ZQ+G3N7aL8FbTyO03iLwnVvvEikLcNFqNTyabdljo9xDftZndUBFyyyL0aK3qGO9+8EilILHUw==
-  dependencies:
-    babel-runtime "^6.6.1"
-    prop-types "^15.5.8"
-    react-base16-styling "^0.5.1"
 
 react-lifecycles-compat@^3.0.4:
   version "3.0.4"

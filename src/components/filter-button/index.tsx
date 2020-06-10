@@ -6,6 +6,7 @@ import {
   SearchTerm,
 } from "../../context-providers/FilterProvider";
 import FilterItemList from "../filter-item-list";
+import FilterUsageSection from "../filter-usage-section";
 import "./index.scss";
 
 type Props = {
@@ -16,6 +17,7 @@ type Props = {
 function FilterButton({ filename, applyFilter }: Props) {
   const { getFilters, updateFilters } = useContext(FilterContext);
   const [openFilterOptions, setOpenFilterOptions] = useState(false);
+  const [openFilterUsage, setOpenFilterUsage] = useState(false);
   const [filters, setFilters] = useState<Filter[]>([]);
 
   const addFilter = (filter: Filter = { searchGroup: [], searchTerms: [] }) => {
@@ -90,13 +92,22 @@ function FilterButton({ filename, applyFilter }: Props) {
       >
         <Modal open={true} onClose={() => setOpenFilterOptions(false)}>
           <Modal.Header className="filter-options-header">
-            Filter Options
+            <span>
+              Filter Options{" "}
+              <Button
+                className="filter-usage-button"
+                content="Usage"
+                color="teal"
+                onClick={() => setOpenFilterUsage(!openFilterUsage)}
+              />
+            </span>
+
             <span>
               <Popup
                 content="Add filter"
                 trigger={
                   <Button
-                    color="teal"
+                    color="green"
                     icon="plus"
                     onClick={() => addFilter()}
                   />
@@ -105,6 +116,9 @@ function FilterButton({ filename, applyFilter }: Props) {
               />
             </span>
           </Modal.Header>
+
+          <FilterUsageSection openFilterUsage={openFilterUsage} />
+
           <Modal.Content>
             <FilterItemList
               filters={filters}
