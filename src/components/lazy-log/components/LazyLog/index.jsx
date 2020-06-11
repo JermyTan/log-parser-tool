@@ -681,7 +681,7 @@ export default class LazyLog extends Component {
         <Line
           className={lineClassName}
           highlightClassName={highlightLineClassName}
-          data={[{ bold: true, text: "No filter matches" }]}
+          data={[{ bold: true, text: "No search matches" }]}
         />
       );
     }
@@ -712,7 +712,7 @@ export default class LazyLog extends Component {
     const rowCount = isFilteringLinesWithMatches ? filteredLines.size : count;
 
     return (
-      <Fragment>
+      <div style={{ height: "100%" }}>
         {enableSearch && (
           <SearchBar
             filterActive={isFilteringLinesWithMatches}
@@ -742,7 +742,7 @@ export default class LazyLog extends Component {
             />
           )}
         </AutoSizer>
-      </Fragment>
+      </div>
     );
   }
 }
