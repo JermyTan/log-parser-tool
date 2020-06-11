@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Button } from "semantic-ui-react";
 import FilterButton from "../filter-button";
-import { FilterContext } from "../../context-providers/FilterProvider";
+import { FilterContext, Filter } from "../../context-providers/FilterProvider";
 import { LazyLog } from "../lazy-log/components";
 import Queue from "queue-fifo";
 // @ts-ignore
@@ -63,7 +63,9 @@ function JsonViewer({ filename, data }: Props) {
   const activeFilter = isFiltering && filters.length > 0;
 
   useEffect(() => {
-    setOriginalDataState(computeDataState(data));
+    const dataState = computeDataState(data);
+    setOriginalDataState(dataState);
+    setActiveDataState(dataState);
   }, []);
 
   const onScroll = ({ scrollTop }: any) => {
@@ -71,7 +73,7 @@ function JsonViewer({ filename, data }: Props) {
     console.log(`current line num: ${currentLineNum}`);
   };
 
-  const processJson = () => {
+  const processJson = (activeFilter: boolean, filters: Filter[]) => {
     if (!activeFilter) {
       setActiveDataState(originalDataState);
     } else {
@@ -190,9 +192,8 @@ function JsonViewer({ filename, data }: Props) {
   };
 
   useEffect(() => {
-    console.log("run effect");
-    processJson();
-  }, [filters]);
+    processJson(activeFilter, filters);
+  }, [filters, activeFilter]);
 
   console.log(filters.length);
 

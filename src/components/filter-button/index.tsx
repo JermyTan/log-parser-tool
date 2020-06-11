@@ -78,68 +78,59 @@ function FilterButton({ filename, applyFilter }: Props) {
   };
 
   return (
-    <>
-      <Button
-        content="Filter"
-        primary
-        compact
-        onClick={() => setOpenFilterOptions(true)}
-      />
-      <TransitionablePortal
-        open={openFilterOptions}
-        transition={{ animation: "fade" }}
-        onOpen={() => setFilters(getFilters(filename))}
-      >
-        <Modal open={true} onClose={() => setOpenFilterOptions(false)}>
-          <Modal.Header className="filter-options-header">
-            <span>
-              Filter Options{" "}
-              <Button
-                className="filter-usage-button"
-                content="Usage"
-                color="teal"
-                onClick={() => setOpenFilterUsage(!openFilterUsage)}
-              />
-            </span>
+    <Modal
+      trigger={
+        <Button
+          content="Filter"
+          primary
+          compact
+          onClick={() => setOpenFilterOptions(true)}
+        />
+      }
+      open={openFilterOptions}
+      onOpen={() => setFilters(getFilters(filename))}
+      onClose={() => setOpenFilterOptions(false)}
+    >
+      <Modal.Header className="filter-options-header">
+        <span>
+          Filter Options{" "}
+          <Button
+            className="filter-usage-button"
+            content="Usage"
+            color="teal"
+            onClick={() => setOpenFilterUsage(!openFilterUsage)}
+          />
+        </span>
 
-            <span>
-              <Popup
-                content="Add filter"
-                trigger={
-                  <Button
-                    color="green"
-                    icon="plus"
-                    onClick={() => addFilter()}
-                  />
-                }
-                position="top center"
-              />
-            </span>
-          </Modal.Header>
+        <span>
+          <Popup
+            content="Add filter"
+            trigger={
+              <Button color="green" icon="plus" onClick={() => addFilter()} />
+            }
+            position="top center"
+          />
+        </span>
+      </Modal.Header>
 
-          <FilterUsageSection openFilterUsage={openFilterUsage} />
+      <FilterUsageSection openFilterUsage={openFilterUsage} />
 
-          <Modal.Content>
-            <FilterItemList
-              filters={filters}
-              filterActions={{
-                removeFilter: removeFilter,
-                setSearchGroup: setSearchGroup,
-                addSearchTerm: addSearchTerm,
-                removeSearchTerm: removeSearchTerm,
-              }}
-            />
-          </Modal.Content>
-          <Modal.Actions>
-            <Button
-              content="Back"
-              onClick={() => setOpenFilterOptions(false)}
-            />
-            <Button primary content="Apply" onClick={handleApply} />
-          </Modal.Actions>
-        </Modal>
-      </TransitionablePortal>
-    </>
+      <Modal.Content>
+        <FilterItemList
+          filters={filters}
+          filterActions={{
+            removeFilter: removeFilter,
+            setSearchGroup: setSearchGroup,
+            addSearchTerm: addSearchTerm,
+            removeSearchTerm: removeSearchTerm,
+          }}
+        />
+      </Modal.Content>
+      <Modal.Actions>
+        <Button content="Back" onClick={() => setOpenFilterOptions(false)} />
+        <Button primary content="Apply" onClick={handleApply} />
+      </Modal.Actions>
+    </Modal>
   );
 }
 
