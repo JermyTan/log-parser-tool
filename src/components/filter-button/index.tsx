@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { Button, Modal, TransitionablePortal, Popup } from "semantic-ui-react";
+import { Button, Modal, Popup } from "semantic-ui-react";
 import {
   FilterContext,
   Filter,
@@ -74,6 +74,7 @@ function FilterButton({ filename, applyFilter }: Props) {
     );
     updateFilters(filename, filteredResults);
     applyFilter();
+    setOpenFilterUsage(false);
     setOpenFilterOptions(false);
   };
 
@@ -89,7 +90,10 @@ function FilterButton({ filename, applyFilter }: Props) {
       }
       open={openFilterOptions}
       onOpen={() => setFilters(getFilters(filename))}
-      onClose={() => setOpenFilterOptions(false)}
+      onClose={() => {
+        setOpenFilterUsage(false);
+        setOpenFilterOptions(false);
+      }}
     >
       <Modal.Header className="filter-options-header">
         <span>
@@ -127,7 +131,13 @@ function FilterButton({ filename, applyFilter }: Props) {
         />
       </Modal.Content>
       <Modal.Actions>
-        <Button content="Back" onClick={() => setOpenFilterOptions(false)} />
+        <Button
+          content="Back"
+          onClick={() => {
+            setOpenFilterUsage(false);
+            setOpenFilterOptions(false);
+          }}
+        />
         <Button primary content="Apply" onClick={handleApply} />
       </Modal.Actions>
     </Modal>

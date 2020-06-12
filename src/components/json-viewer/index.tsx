@@ -1,11 +1,12 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Button } from "semantic-ui-react";
+import { Button, Icon } from "semantic-ui-react";
 import FilterButton from "../filter-button";
 import { FilterContext, Filter } from "../../context-providers/FilterProvider";
 import { LazyLog } from "../lazy-log/components";
 import Queue from "queue-fifo";
 // @ts-ignore
 import RBTree from "functional-red-black-tree";
+import { useStateWithCallback } from "../../utils/custom-hooks";
 import "./index.scss";
 
 type Props = {
@@ -16,6 +17,12 @@ type Props = {
 type DataState = {
   dataString: string;
   jumpIndexes: any;
+};
+
+// 1-based
+type AdjacentJumpIndexes = {
+  prev: number;
+  next: number;
 };
 
 const computeDataState = (data: any): DataState => {
@@ -52,7 +59,7 @@ const computeDataState = (data: any): DataState => {
 };
 
 function JsonViewer({ filename, data }: Props) {
-  const { getFilters } = useContext(FilterContext);
+  const { getFilters, updateFilters } = useContext(FilterContext);
   const filters = getFilters(filename);
   const [isFiltering, setFiltering] = useState(false);
   const [originalDataState, setOriginalDataState] = useState<DataState>({
@@ -60,146 +67,216 @@ function JsonViewer({ filename, data }: Props) {
     jumpIndexes: RBTree(),
   });
   const [activeDataState, setActiveDataState] = useState(originalDataState);
+  const [adjacentJumpIndexes, setAdjacentJumpIndexes] = useState<
+    AdjacentJumpIndexes
+  >({ prev: 0, next: Number.MAX_SAFE_INTEGER });
+  const [selectedJumpIndex, setSelectedJumpIndex] = useStateWithCallback<
+    number | undefined
+  >(undefined);
+  const [currentJumpIndex, setCurrentJumpIndex] = useState<
+    number | undefined
+  >();
   const activeFilter = isFiltering && filters.length > 0;
+
+  const prepareDataForRender = (dataState: DataState) => {
+    setActiveDataState(dataState);
+    const firstJumpIndex =
+      dataState.jumpIndexes.gt(0).key ?? Number.MAX_SAFE_INTEGER;
+    setAdjacentJumpIndexes({ prev: 0, next: firstJumpIndex });
+  };
+
+  const updateAdjacentJumpIndexes = (newIndex: number) => {
+    const newPrev = activeDataState.jumpIndexes.lt(newIndex).key ?? 0;
+    const newNext =
+      activeDataState.jumpIndexes.gt(newIndex).key ?? Number.MAX_SAFE_INTEGER;
+    setAdjacentJumpIndexes({ prev: newPrev, next: newNext });
+    setCurrentJumpIndex(
+      activeDataState.jumpIndexes.get(newIndex) ? newIndex : undefined
+    );
+    console.log(`new prev: ${newPrev}, new next: ${newNext}`);
+  };
 
   useEffect(() => {
     const dataState = computeDataState(data);
     setOriginalDataState(dataState);
-    setActiveDataState(dataState);
+    prepareDataForRender(dataState);
+    updateFilters(filename, []);
   }, []);
 
   const onScroll = ({ scrollTop }: any) => {
     const currentLineNum = Math.round(scrollTop / 19) + 1;
     console.log(`current line num: ${currentLineNum}`);
+
+    const { prev, next } = adjacentJumpIndexes;
+
+    if (selectedJumpIndex) {
+      setSelectedJumpIndex(undefined);
+    }
+
+    if (
+      currentLineNum <= prev ||
+      currentLineNum >= next ||
+      (currentJumpIndex && currentJumpIndex !== currentLineNum)
+    ) {
+      updateAdjacentJumpIndexes(currentLineNum);
+    }
   };
 
   const processJson = (activeFilter: boolean, filters: Filter[]) => {
     if (!activeFilter) {
-      setActiveDataState(originalDataState);
-    } else {
-      const result: any[] = [];
+      prepareDataForRender(originalDataState);
+      return;
+    }
 
-      filters.forEach((filter) => {
-        const queue = new Queue<{
-          node: any;
-          componentIndex: number;
-        }>();
-        const path = filter.searchGroup;
-        const numComponents = path.length;
-        const candidateResults: any[] = [];
+    const result: any[] = [];
 
-        queue.enqueue({ node: data, componentIndex: 0 });
+    filters.forEach((filter) => {
+      const queue = new Queue<{
+        node: any;
+        componentIndex: number;
+      }>();
+      const path = filter.searchGroup;
+      const numComponents = path.length;
+      const candidateResults: any[] = [];
 
-        while (!queue.isEmpty()) {
-          let { node, componentIndex } = queue.dequeue() ?? {
-            node: {},
-            componentIndex: Number.POSITIVE_INFINITY,
-          };
-          if (componentIndex >= numComponents) {
-            break;
-          } else if (typeof node !== "object") {
-            continue;
-          }
+      queue.enqueue({ node: data, componentIndex: 0 });
 
-          const currentComponent = path[componentIndex++];
-
-          let neighbours: any[];
-          if (currentComponent === "*") {
-            neighbours = Object.values(node);
-          } else {
-            const neighbour = node?.[currentComponent];
-            neighbours = neighbour ? [neighbour] : [];
-          }
-
-          neighbours.forEach((neighbour) => {
-            if (componentIndex >= numComponents) {
-              candidateResults.push(neighbour);
-            } else {
-              queue.enqueue({ node: neighbour, componentIndex });
-            }
-          });
+      while (!queue.isEmpty()) {
+        let { node, componentIndex } = queue.dequeue() ?? {
+          node: {},
+          componentIndex: Number.POSITIVE_INFINITY,
+        };
+        if (componentIndex >= numComponents) {
+          break;
+        } else if (typeof node !== "object") {
+          continue;
         }
 
-        console.log(candidateResults);
+        const currentComponent = path[componentIndex++];
 
-        const searchTerms = filter.searchTerms;
-        const numSearchTerms = searchTerms.length;
-        candidateResults.forEach((candidateResult) => {
-          let numValidSearchTerms = 0;
+        let neighbours: any[];
+        if (currentComponent === "*") {
+          neighbours = Object.values(node);
+        } else {
+          const neighbour = node?.[currentComponent];
+          neighbours = neighbour ? [neighbour] : [];
+        }
 
-          searchTerms.forEach((searchTerm) => {
-            const queue = new Queue<{
-              node: any;
-              componentIndex: number;
-            }>();
-            const path = searchTerm.keyPath;
-            const numComponents = path.length;
-
-            queue.enqueue({ node: candidateResult, componentIndex: 0 });
-
-            while (!queue.isEmpty()) {
-              let { node, componentIndex } = queue.dequeue() ?? {
-                node: {},
-                componentIndex: Number.POSITIVE_INFINITY,
-              };
-
-              if (componentIndex === numComponents) {
-                if (typeof node === "object") {
-                  continue;
-                }
-
-                let sourceValue: string = node.toString();
-                let inputValue = searchTerm.value;
-
-                if (!searchTerm.caseSensitiveValueSearch) {
-                  sourceValue = sourceValue.toLowerCase();
-                  inputValue = inputValue.toLowerCase();
-                }
-
-                ((searchTerm.partialValueSearch &&
-                  sourceValue.includes(inputValue)) ||
-                  sourceValue === inputValue) &&
-                  numValidSearchTerms++;
-
-                continue;
-              } else if (typeof node !== "object") {
-                continue;
-              }
-
-              const currentComponent = path[componentIndex++];
-
-              let neighbours: any[];
-              if (currentComponent === "*") {
-                neighbours = Object.values(node);
-              } else {
-                const neighbour = node?.[currentComponent];
-                neighbours = neighbour ? [neighbour] : [];
-              }
-
-              neighbours.forEach((neighbour) => {
-                queue.enqueue({ node: neighbour, componentIndex });
-              });
-            }
-          });
-
-          numValidSearchTerms === numSearchTerms &&
-            result.push(candidateResult);
+        neighbours.forEach((neighbour) => {
+          if (componentIndex >= numComponents) {
+            candidateResults.push(neighbour);
+          } else {
+            queue.enqueue({ node: neighbour, componentIndex });
+          }
         });
-      });
+      }
 
-      setActiveDataState(computeDataState([...(new Set(result) as any)]));
-    }
+      console.log(candidateResults);
+
+      const searchTerms = filter.searchTerms;
+      const numSearchTerms = searchTerms.length;
+      candidateResults.forEach((candidateResult) => {
+        let numValidSearchTerms = 0;
+
+        searchTerms.forEach((searchTerm) => {
+          const queue = new Queue<{
+            node: any;
+            componentIndex: number;
+          }>();
+          const path = searchTerm.keyPath;
+          const numComponents = path.length;
+
+          queue.enqueue({ node: candidateResult, componentIndex: 0 });
+
+          while (!queue.isEmpty()) {
+            let { node, componentIndex } = queue.dequeue() ?? {
+              node: {},
+              componentIndex: Number.POSITIVE_INFINITY,
+            };
+
+            if (componentIndex === numComponents) {
+              if (typeof node === "object") {
+                continue;
+              }
+
+              let sourceValue: string = node.toString();
+              let inputValue = searchTerm.value;
+
+              if (!searchTerm.caseSensitiveValueSearch) {
+                sourceValue = sourceValue.toLowerCase();
+                inputValue = inputValue.toLowerCase();
+              }
+
+              ((searchTerm.partialValueSearch &&
+                sourceValue.includes(inputValue)) ||
+                sourceValue === inputValue) &&
+                numValidSearchTerms++;
+
+              continue;
+            } else if (typeof node !== "object") {
+              continue;
+            }
+
+            const currentComponent = path[componentIndex++];
+
+            let neighbours: any[];
+            if (currentComponent === "*") {
+              neighbours = Object.values(node);
+            } else {
+              const neighbour = node?.[currentComponent];
+              neighbours = neighbour ? [neighbour] : [];
+            }
+
+            neighbours.forEach((neighbour) => {
+              queue.enqueue({ node: neighbour, componentIndex });
+            });
+          }
+        });
+
+        numValidSearchTerms === numSearchTerms && result.push(candidateResult);
+      });
+    });
+
+    prepareDataForRender(computeDataState([...(new Set(result) as any)]));
   };
 
   useEffect(() => {
-    processJson(activeFilter, filters);
+    console.log("process json");
+    setSelectedJumpIndex(1, () => processJson(activeFilter, filters));
   }, [filters, activeFilter]);
 
   console.log(filters.length);
 
+  const { prev, next } = adjacentJumpIndexes;
+
+  const handleArrowClick = (event: any, data: any) => {
+    const newJumpIndex = data.value;
+    setSelectedJumpIndex(newJumpIndex);
+  };
+
   return (
     <div className="json-viewer-container">
       <div className="json-viewer-action-buttons">
+        <Icon
+          name="arrow up"
+          color="purple"
+          link={prev > 0}
+          disabled={prev <= 0}
+          circular
+          inverted
+          value={prev}
+          onClick={handleArrowClick}
+        />
+        <Icon
+          name="arrow down"
+          color="purple"
+          link={next < Number.MAX_SAFE_INTEGER}
+          disabled={next >= Number.MAX_SAFE_INTEGER}
+          circular
+          inverted
+          value={next}
+          onClick={handleArrowClick}
+        />
         <FilterButton
           filename={filename}
           applyFilter={() => setFiltering(true)}
@@ -221,6 +298,7 @@ function JsonViewer({ filename, data }: Props) {
         selectableLines
         onScroll={onScroll}
         scrollToAlignment="start"
+        scrollToLine={selectedJumpIndex}
       />
     </div>
   );
