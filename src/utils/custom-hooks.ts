@@ -45,10 +45,12 @@ export function useLogs(): [boolean, boolean, any] {
 
   useEffect(() => {
     const url = query.get(URL_QUERY);
-    console.log(url);
+    const proxyServerUrl = "https://jeremy-cors-anywhere-server.herokuapp.com";
+    console.log("Download url:", url);
+    console.log("Proxy server url:", proxyServerUrl);
     if (url) {
       axios
-        .get(`https://cors-anywhere.herokuapp.com/${url}`, {
+        .get(`${proxyServerUrl}/${url}`, {
           responseType: "arraybuffer",
         })
         .then((response) => {
