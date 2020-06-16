@@ -19,6 +19,7 @@
     "adm-zip": "^0.4.14",
     "arraybuffer-to-buffer": "^0.0.7",
     "axios": "^0.19.2",
+    "dayjs": "^1.8.28",
     "fetch-readablestream": "^0.2.0",
     "functional-red-black-tree": "^1.0.1",
     "mitt": "^1.2.0",

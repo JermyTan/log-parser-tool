@@ -42,8 +42,8 @@ function SearchTermItem({
       basic={!isRangeValue && partialValueSearch}
     >
       {isRangeValue
-        ? `${lowerBound ? `${lowerBound} <= ` : ""}${pathString}${
-            upperBound ? `<= ${upperBound}` : ""
+        ? `${lowerBound ? `${lowerBound} ≤ ` : ""}${pathString}${
+            upperBound ? ` ≤ ${upperBound}` : ""
           }`
         : `${pathString} == ${content}`}
       <Icon

@@ -94,6 +94,7 @@ function FilterButton({ filename, applyFilter }: Props) {
         setOpenFilterUsage(false);
         setOpenFilterOptions(false);
       }}
+      size="large"
     >
       <Modal.Header className="filter-options-header">
         <span>

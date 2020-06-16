@@ -4,6 +4,7 @@ import { Filter } from "../../context-providers/FilterProvider";
 import { FilterActions } from "../filter-item-list";
 import SearchTermItemList from "../search-term-item-list";
 import FilterItemInputField from "../filter-item-input-field";
+import { parseStringToDate } from "../../utils/types-util";
 import "./index.scss";
 
 type Props = {
@@ -29,6 +30,10 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
   const [isRangeValue, setRangeValue] = useState(false);
   const [lowerBound, setLowerBound] = useState("");
   const [upperBound, setUpperBound] = useState("");
+  const trimmedLowerBound = lowerBound.trim();
+  const trimmedUpperBound = upperBound.trim();
+  const isLowerBoundDatetime = parseStringToDate(trimmedLowerBound).isValidDate;
+  const isUpperBoundDateTime = parseStringToDate(trimmedUpperBound).isValidDate;
 
   const panes = [
     {
@@ -38,9 +43,11 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
           <Form.Group className="filter-item-inputs-container">
             <FilterItemInputField
               fieldLabel="Key Path"
-              inputLabel={`root.${searchGroup.join(".")}${
-                searchGroup.length > 0 ? "." : ""
-              }`}
+              inputLabel={{
+                content: `root.${searchGroup.join(".")}${
+                  searchGroup.length > 0 ? "." : ""
+                }`,
+              }}
               placeholder="action.type"
               value={keyPath}
               onChange={(event, data) => setKeyPath(data.value.trim())}
@@ -109,6 +116,14 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
           <Form.Group className="filter-item-inputs-container">
             <FilterItemInputField
               fieldLabel="Lower Bound Value"
+              inputLabel={
+                isLowerBoundDatetime
+                  ? {
+                      icon: { name: "calendar check outline", fitted: true },
+                      color: "teal",
+                    }
+                  : undefined
+              }
               value={lowerBound}
               onChange={(event, data) => setLowerBound(data.value)}
               onClear={() => setLowerBound("")}
@@ -120,9 +135,11 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
 
             <FilterItemInputField
               fieldLabel="Key Path"
-              inputLabel={`root.${searchGroup.join(".")}${
-                searchGroup.length > 0 ? "." : ""
-              }`}
+              inputLabel={{
+                content: `root.${searchGroup.join(".")}${
+                  searchGroup.length > 0 ? "." : ""
+                }`,
+              }}
               placeholder="action.type"
               value={keyPath}
               onChange={(event, data) => setKeyPath(data.value.trim())}
@@ -134,6 +151,14 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
             </div>
 
             <FilterItemInputField
+              inputLabel={
+                isUpperBoundDateTime
+                  ? {
+                      icon: { name: "calendar check outline", fitted: true },
+                      color: "teal",
+                    }
+                  : undefined
+              }
               fieldLabel="Upper Bound Value"
               value={upperBound}
               onChange={(event, data) => setUpperBound(data.value)}
@@ -148,7 +173,16 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
               onClick={() => {
                 addSearchTerm(filterIndex, {
                   keyPath: keyPath.split("."),
-                  value: { bounds: {} },
+                  value: {
+                    bounds: {
+                      lowerBound: !trimmedLowerBound
+                        ? undefined
+                        : trimmedLowerBound,
+                      upperBound: !trimmedUpperBound
+                        ? undefined
+                        : trimmedUpperBound,
+                    },
+                  },
                   isRangeValue: isRangeValue,
                 });
                 setLowerBound("");
@@ -156,7 +190,15 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
               }}
               compact
               primary
-              disabled={!keyPath || (!lowerBound.trim() && !upperBound.trim())}
+              disabled={
+                !keyPath ||
+                (!trimmedLowerBound && !trimmedUpperBound) ||
+                (!!trimmedLowerBound &&
+                !!trimmedUpperBound &&
+                isLowerBoundDatetime
+                  ? !isUpperBoundDateTime
+                  : isUpperBoundDateTime)
+              }
             />
           </Form.Group>
         </Tab.Pane>
@@ -169,7 +211,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
       <Form.Group className="filter-item-search-tree-container">
         <FilterItemInputField
           fieldLabel="Search Tree"
-          inputLabel="root."
+          inputLabel={{ content: "root." }}
           placeholder="history.*"
           value={searchGroup.join(".")}
           onChange={(event, data) =>

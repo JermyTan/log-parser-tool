@@ -7,7 +7,7 @@ export type EqualValue = {
 };
 
 export type RangeValue = {
-  bounds: { lowerBound?: string | number; upperBound?: string | number };
+  bounds: { lowerBound?: string; upperBound?: string };
 };
 
 export type SearchTerm = {
