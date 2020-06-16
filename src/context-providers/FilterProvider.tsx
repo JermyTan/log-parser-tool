@@ -1,10 +1,19 @@
 import React, { createContext, useState } from "react";
 
-export type SearchTerm = {
-  keyPath: string[];
-  value: string;
+export type EqualValue = {
+  content: string;
   partialValueSearch: boolean;
   caseSensitiveValueSearch: boolean;
+};
+
+export type RangeValue = {
+  bounds: { lowerBound?: string | number; upperBound?: string | number };
+};
+
+export type SearchTerm = {
+  keyPath: string[];
+  value: EqualValue | RangeValue;
+  isRangeValue: boolean;
 };
 
 export type Filter = {

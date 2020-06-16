@@ -52,9 +52,7 @@ function LogInfoPage() {
   return (
     <main>
       <Container className="log-info-container">
-        <h1 className="log-info-header" style={isFullscreen ? hiddenStyle : {}}>
-          Logs
-        </h1>
+        <h1 style={isFullscreen ? hiddenStyle : {}}>Logs</h1>
 
         {!invalid && !loading ? (
           <Fullscreen fullScreen={isFullscreen} allowScrollbar={true}>
@@ -75,7 +73,6 @@ function LogInfoPage() {
             </div>
 
             <Tab
-              className="log-info-tab"
               menu={{
                 attached: false,
                 size: "large",

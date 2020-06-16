@@ -98,12 +98,14 @@ function FilterButton({ filename, applyFilter }: Props) {
       <Modal.Header className="filter-options-header">
         <span>
           Filter Options{" "}
+          {/*
           <Button
             className="filter-usage-button"
             content="Usage"
             color="teal"
             onClick={() => setOpenFilterUsage(!openFilterUsage)}
           />
+          */}
         </span>
 
         <span>

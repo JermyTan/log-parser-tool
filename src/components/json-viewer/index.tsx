@@ -1,7 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Button, Icon } from "semantic-ui-react";
 import FilterButton from "../filter-button";
-import { FilterContext, Filter } from "../../context-providers/FilterProvider";
+import {
+  FilterContext,
+  Filter,
+  EqualValue,
+} from "../../context-providers/FilterProvider";
 import { LazyLog } from "../lazy-log/components";
 import Queue from "queue-fifo";
 // @ts-ignore
@@ -200,17 +204,21 @@ function JsonViewer({ filename, data }: Props) {
               }
 
               let sourceValue: string = node.toString();
-              let inputValue = searchTerm.value;
 
-              if (!searchTerm.caseSensitiveValueSearch) {
-                sourceValue = sourceValue.toLowerCase();
-                inputValue = inputValue.toLowerCase();
+              if (!searchTerm.isRangeValue) {
+                const value = searchTerm.value as EqualValue;
+                let inputValue = value.content;
+                const { caseSensitiveValueSearch, partialValueSearch } = value;
+
+                if (!caseSensitiveValueSearch) {
+                  sourceValue = sourceValue.toLowerCase();
+                  inputValue = inputValue.toLowerCase();
+                }
+
+                ((partialValueSearch && sourceValue.includes(inputValue)) ||
+                  sourceValue === inputValue) &&
+                  numValidSearchTerms++;
               }
-
-              ((searchTerm.partialValueSearch &&
-                sourceValue.includes(inputValue)) ||
-                sourceValue === inputValue) &&
-                numValidSearchTerms++;
 
               continue;
             } else if (typeof node !== "object") {

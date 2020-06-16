@@ -1,6 +1,10 @@
 import React from "react";
 import { Label, Icon } from "semantic-ui-react";
-import { SearchTerm } from "../../context-providers/FilterProvider";
+import {
+  SearchTerm,
+  EqualValue,
+  RangeValue,
+} from "../../context-providers/FilterProvider";
 import "./index.scss";
 
 type Props = {
@@ -18,23 +22,30 @@ function SearchTermItem({
   removeSearchTerm,
   searchGroup,
 }: Props) {
+  const { keyPath, value, isRangeValue } = searchTerm;
   const {
-    keyPath,
-    value,
-    partialValueSearch,
     caseSensitiveValueSearch,
-  } = searchTerm;
+    partialValueSearch,
+    content,
+  } = value as EqualValue;
+  const { bounds } = value as RangeValue;
+  const { lowerBound, upperBound } = { ...bounds };
 
-  const lhs = ["root", searchGroup.join("."), keyPath.join(".")];
-  searchGroup.length === 0 && lhs.splice(1, 1);
+  const pathString = ["root"].concat(searchGroup).concat(keyPath).join(".");
 
   return (
     <Label
       className="search-term-item"
-      color={caseSensitiveValueSearch ? "brown" : "grey"}
-      basic={partialValueSearch}
+      color={
+        isRangeValue ? undefined : caseSensitiveValueSearch ? "brown" : "grey"
+      }
+      basic={!isRangeValue && partialValueSearch}
     >
-      {lhs.join(".")} == {value}
+      {isRangeValue
+        ? `${lowerBound ? `${lowerBound} <= ` : ""}${pathString}${
+            upperBound ? `<= ${upperBound}` : ""
+          }`
+        : `${pathString} == ${content}`}
       <Icon
         name="close"
         onClick={() => removeSearchTerm(filterIndex, searchTermIndex)}

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Form, Input, Popup, Label, Transition, Icon } from "semantic-ui-react";
+import { Form, Popup, Label, Tab } from "semantic-ui-react";
 import { Filter } from "../../context-providers/FilterProvider";
 import { FilterActions } from "../filter-item-list";
 import SearchTermItemList from "../search-term-item-list";
+import FilterItemInputField from "../filter-item-input-field";
 import "./index.scss";
 
 type Props = {
@@ -25,36 +26,159 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
   const [caseSensitiveValueSearch, setCaseSensitiveValueSearch] = useState(
     false
   );
+  const [isRangeValue, setRangeValue] = useState(false);
+  const [lowerBound, setLowerBound] = useState("");
+  const [upperBound, setUpperBound] = useState("");
+
+  const panes = [
+    {
+      menuItem: "Equality Filter",
+      render: () => (
+        <Tab.Pane attached={false}>
+          <Form.Group className="filter-item-inputs-container">
+            <FilterItemInputField
+              fieldLabel="Key Path"
+              inputLabel={`root.${searchGroup.join(".")}${
+                searchGroup.length > 0 ? "." : ""
+              }`}
+              placeholder="action.type"
+              value={keyPath}
+              onChange={(event, data) => setKeyPath(data.value.trim())}
+              onClear={() => setKeyPath("")}
+            />
+
+            <div className="filter-item-equals-container">
+              <Label className="filter-item-comparison-symbol" content="==" />
+            </div>
+
+            <FilterItemInputField
+              fieldLabel="Value"
+              placeholder="NETWORK_WEB_SOCKET_CONNECTING"
+              value={value}
+              onChange={(event, data) => setValue(data.value)}
+              onClear={() => setValue("")}
+            />
+          </Form.Group>
+
+          <Form.Group className="filter-item-actions-container">
+            <Form.Button
+              className="filter-item-action"
+              content="Add"
+              onClick={() => {
+                addSearchTerm(filterIndex, {
+                  keyPath: keyPath.split("."),
+                  value: {
+                    content: value.trim(),
+                    partialValueSearch,
+                    caseSensitiveValueSearch,
+                  },
+                  isRangeValue: isRangeValue,
+                });
+                setValue("");
+              }}
+              compact
+              primary
+              disabled={!keyPath || !value.trim()}
+            />
+
+            <Form.Radio
+              className="filter-item-action"
+              label="Allow partial value search"
+              toggle
+              checked={partialValueSearch}
+              onChange={() => setPartialValueSearch(!partialValueSearch)}
+            />
+
+            <Form.Radio
+              className="filter-item-action"
+              label="Allow case-sensitive value search"
+              toggle
+              checked={caseSensitiveValueSearch}
+              onChange={() =>
+                setCaseSensitiveValueSearch(!caseSensitiveValueSearch)
+              }
+            />
+          </Form.Group>
+        </Tab.Pane>
+      ),
+    },
+    {
+      menuItem: "Range Filter",
+      render: () => (
+        <Tab.Pane attached={false}>
+          <Form.Group className="filter-item-inputs-container">
+            <FilterItemInputField
+              fieldLabel="Lower Bound Value"
+              value={lowerBound}
+              onChange={(event, data) => setLowerBound(data.value)}
+              onClear={() => setLowerBound("")}
+            />
+
+            <div className="filter-item-equals-container">
+              <Label className="filter-item-comparison-symbol" content="≤" />
+            </div>
+
+            <FilterItemInputField
+              fieldLabel="Key Path"
+              inputLabel={`root.${searchGroup.join(".")}${
+                searchGroup.length > 0 ? "." : ""
+              }`}
+              placeholder="action.type"
+              value={keyPath}
+              onChange={(event, data) => setKeyPath(data.value.trim())}
+              onClear={() => setKeyPath("")}
+            />
+
+            <div className="filter-item-equals-container">
+              <Label className="filter-item-comparison-symbol" content="≤" />
+            </div>
+
+            <FilterItemInputField
+              fieldLabel="Upper Bound Value"
+              value={upperBound}
+              onChange={(event, data) => setUpperBound(data.value)}
+              onClear={() => setUpperBound("")}
+            />
+          </Form.Group>
+
+          <Form.Group className="filter-item-actions-container">
+            <Form.Button
+              className="filter-item-action"
+              content="Add"
+              onClick={() => {
+                addSearchTerm(filterIndex, {
+                  keyPath: keyPath.split("."),
+                  value: { bounds: {} },
+                  isRangeValue: isRangeValue,
+                });
+                setLowerBound("");
+                setUpperBound("");
+              }}
+              compact
+              primary
+              disabled={!keyPath || (!lowerBound.trim() && !upperBound.trim())}
+            />
+          </Form.Group>
+        </Tab.Pane>
+      ),
+    },
+  ];
 
   return (
     <Form>
       <Form.Group className="filter-item-search-tree-container">
-        <Form.Field className="filter-item-field">
-          <label>Search Tree</label>
-          <Input
-            label="root."
-            placeholder="history.*"
-            value={searchGroup.join(".")}
-            onChange={(event, data) =>
-              setSearchGroup(filterIndex, data.value.trim())
-            }
-            disabled={searchTerms.length > 0}
-            icon={
-              <Transition
-                visible={!!searchGroup?.[0]}
-                unmountOnHide
-                animation="scale"
-              >
-                <Icon
-                  link
-                  name="close"
-                  onClick={() => setSearchGroup(filterIndex, "")}
-                  disabled={searchTerms.length > 0}
-                />
-              </Transition>
-            }
-          />
-        </Form.Field>
+        <FilterItemInputField
+          fieldLabel="Search Tree"
+          inputLabel="root."
+          placeholder="history.*"
+          value={searchGroup.join(".")}
+          onChange={(event, data) =>
+            setSearchGroup(filterIndex, data.value.trim())
+          }
+          onClear={() => setSearchGroup(filterIndex, "")}
+          disabled={searchTerms.length > 0}
+        />
+
         <Popup
           content="Delete filter"
           trigger={
@@ -62,6 +186,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
               color="red"
               icon="close"
               onClick={() => removeFilter(filterIndex)}
+              type="button"
             />
           }
           position="top center"
@@ -75,80 +200,11 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
         removeSearchTerm={removeSearchTerm}
       />
 
-      <Form.Group className="filter-item-inputs-container">
-        <Form.Field className="filter-item-field">
-          <label>Key Path</label>
-          <Input
-            label={`root.${searchGroup.join(".")}${
-              searchGroup.length > 0 ? "." : ""
-            }`}
-            placeholder="action.type"
-            value={keyPath}
-            onChange={(event, data) => setKeyPath(data.value.trim())}
-            icon={
-              <Transition visible={!!keyPath} unmountOnHide animation="scale">
-                <Icon link name="close" onClick={() => setKeyPath("")} />
-              </Transition>
-            }
-          />
-        </Form.Field>
-
-        <div className="filter-item-equals-container">
-          <Label className="filter-item-equals" content="==" />
-        </div>
-
-        <Form.Field className="filter-item-field">
-          <label>Value</label>
-          <Input
-            placeholder="NETWORK_WEB_SOCKET_CONNECTING"
-            value={value}
-            onChange={(event, data) => setValue(data.value)}
-            icon={
-              <Transition visible={!!value} unmountOnHide animation="scale">
-                <Icon link name="close" onClick={() => setValue("")} />
-              </Transition>
-            }
-          />
-        </Form.Field>
-      </Form.Group>
-
-      <Form.Group className="filter-item-actions-container">
-        <Form.Button
-          className="filter-item-action"
-          content="Add"
-          onClick={() => {
-            addSearchTerm(filterIndex, {
-              keyPath: keyPath.split("."),
-              value: value.trim(),
-              partialValueSearch,
-              caseSensitiveValueSearch,
-            });
-            setKeyPath("");
-            setValue("");
-          }}
-          compact
-          primary
-          disabled={!keyPath || !value.trim()}
-        />
-
-        <Form.Radio
-          className="filter-item-action"
-          label="Allow partial value search"
-          toggle
-          checked={partialValueSearch}
-          onChange={() => setPartialValueSearch(!partialValueSearch)}
-        />
-
-        <Form.Radio
-          className="filter-item-action"
-          label="Allow case-sensitive value search"
-          toggle
-          checked={caseSensitiveValueSearch}
-          onChange={() =>
-            setCaseSensitiveValueSearch(!caseSensitiveValueSearch)
-          }
-        />
-      </Form.Group>
+      <Tab
+        panes={panes}
+        onTabChange={(event, data) => setRangeValue(data.activeIndex == 1)}
+        menu={{ widths: 2, pointing: true, secondary: true }}
+      />
     </Form>
   );
 }
