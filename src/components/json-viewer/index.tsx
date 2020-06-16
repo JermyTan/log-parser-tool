@@ -5,13 +5,16 @@ import {
   FilterContext,
   Filter,
   EqualValue,
+  RangeValue,
 } from "../../context-providers/FilterProvider";
 import { LazyLog } from "../lazy-log/components";
 import Queue from "queue-fifo";
 // @ts-ignore
 import RBTree from "functional-red-black-tree";
 import { useStateWithCallback } from "../../utils/custom-hooks";
+import { parseStringToDate, isNumeric } from "../../utils/types-util";
 import "./index.scss";
+import { Dayjs } from "dayjs";
 
 type Props = {
   filename: string;
@@ -203,9 +206,67 @@ function JsonViewer({ filename, data }: Props) {
                 continue;
               }
 
-              let sourceValue: string = node.toString();
+              let sourceValue = node;
+              let evaluation = true;
 
-              if (!searchTerm.isRangeValue) {
+              if (searchTerm.isRangeValue) {
+                const { bounds } = searchTerm.value as RangeValue;
+                const { lowerBound, upperBound } = { ...bounds };
+
+                if (isNumeric(sourceValue)) {
+                  if (lowerBound) {
+                    evaluation =
+                      evaluation &&
+                      isNumeric(lowerBound) &&
+                      Number(lowerBound) <= sourceValue;
+                  }
+                  if (upperBound) {
+                    evaluation =
+                      evaluation &&
+                      isNumeric(upperBound) &&
+                      sourceValue <= Number(upperBound);
+                  }
+                } else {
+                  sourceValue = sourceValue.toString();
+                  const {
+                    date: sourceValueDate,
+                    isValidDate: isValidSourceValueDate,
+                  } = parseStringToDate(sourceValue);
+
+                  if (isValidSourceValueDate) {
+                    if (lowerBound) {
+                      const { date: lowerBoundDate } = parseStringToDate(
+                        lowerBound
+                      );
+                      evaluation =
+                        evaluation &&
+                        (lowerBoundDate?.isSameOrBefore(
+                          sourceValueDate as Dayjs
+                        ) ??
+                          false);
+                    }
+                    if (upperBound) {
+                      const { date: upperBoundDate } = parseStringToDate(
+                        upperBound
+                      );
+                      evaluation =
+                        evaluation &&
+                        (upperBoundDate?.isSameOrAfter(
+                          sourceValueDate as Dayjs
+                        ) ??
+                          false);
+                    }
+                  } else {
+                    evaluation = lowerBound
+                      ? evaluation && lowerBound <= sourceValue
+                      : evaluation;
+                    evaluation = upperBound
+                      ? evaluation && sourceValue <= upperBound
+                      : evaluation;
+                  }
+                }
+              } else {
+                sourceValue = sourceValue.toString();
                 const value = searchTerm.value as EqualValue;
                 let inputValue = value.content;
                 const { caseSensitiveValueSearch, partialValueSearch } = value;
@@ -215,10 +276,12 @@ function JsonViewer({ filename, data }: Props) {
                   inputValue = inputValue.toLowerCase();
                 }
 
-                ((partialValueSearch && sourceValue.includes(inputValue)) ||
-                  sourceValue === inputValue) &&
-                  numValidSearchTerms++;
+                evaluation =
+                  (partialValueSearch && sourceValue.includes(inputValue)) ||
+                  sourceValue === inputValue;
               }
+
+              evaluation && numValidSearchTerms++;
 
               continue;
             } else if (typeof node !== "object") {
