@@ -24,7 +24,7 @@ function FilterItemList({ filters, filterActions }: Props) {
       filterIndex={index}
       filterActions={filterActions}
     />,
-    <Divider key={index * 2 + 1} horizontal content="OR" />,
+    <Divider key={index * 2 + 1} horizontal content="OR" section />,
   ]);
   list.pop();
 

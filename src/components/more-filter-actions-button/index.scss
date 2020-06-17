@@ -1,0 +1,26 @@
+.scrolling.dimmable > .dimmer {
+  justify-content: center;
+}
+
+.filter-preferences-list {
+  height: 20rem;
+  overflow: auto;
+}
+
+.filter-preference-item {
+  display: flex !important;
+}
+
+.filter-preference-item-title {
+  display: flex;
+  flex-grow: 1;
+  word-break: break-word;
+  align-items: center;
+  color: black;
+}
+
+.filter-preference-item-button {
+  display: flex;
+  align-items: center;
+  margin-left: 0.25rem;
+}

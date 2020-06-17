@@ -7,6 +7,7 @@ import {
 } from "../../context-providers/FilterProvider";
 import FilterItemList from "../filter-item-list";
 import FilterUsageSection from "../filter-usage-section";
+import MoreFilterActionsButton from "../more-filter-actions-button";
 import "./index.scss";
 
 type Props = {
@@ -19,6 +20,9 @@ function FilterButton({ filename, applyFilter }: Props) {
   const [openFilterOptions, setOpenFilterOptions] = useState(false);
   const [openFilterUsage, setOpenFilterUsage] = useState(false);
   const [filters, setFilters] = useState<Filter[]>([]);
+  const filteredResults = filters.filter(
+    (filter) => filter.searchGroup.length > 0 || filter.searchTerms.length > 0
+  );
 
   const addFilter = (filter: Filter = { searchGroup: [], searchTerms: [] }) => {
     setFilters(filters.concat(filter));
@@ -69,9 +73,6 @@ function FilterButton({ filename, applyFilter }: Props) {
   };
 
   const handleApply = () => {
-    const filteredResults = filters.filter(
-      (filter) => filter.searchGroup.length > 0 || filter.searchTerms.length > 0
-    );
     updateFilters(filename, filteredResults);
     applyFilter();
     setOpenFilterUsage(false);
@@ -115,6 +116,10 @@ function FilterButton({ filename, applyFilter }: Props) {
         </span>
 
         <span>
+          <MoreFilterActionsButton
+            currentFilters={filteredResults}
+            setCurrentFilters={setFilters}
+          />
           <Popup
             content="Add filter"
             trigger={
@@ -128,7 +133,7 @@ function FilterButton({ filename, applyFilter }: Props) {
 
       <FilterUsageSection openFilterUsage={openFilterUsage} />
 
-      <Modal.Content>
+      <Modal.Content scrolling>
         <FilterItemList
           filters={filters}
           filterActions={{

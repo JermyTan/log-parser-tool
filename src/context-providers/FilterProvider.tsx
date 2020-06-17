@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, ReactNode } from "react";
 
 export type EqualValue = {
   content: string;
@@ -35,7 +35,7 @@ export const FilterContext = createContext<FilterContextType>({
   updateFilters: (filename: string, filters: Filter[]) => {},
 });
 
-function FilterProvider(props: any) {
+function FilterProvider({ children }: { children: ReactNode }) {
   const [file, setFile] = useState<FileFilter>({});
 
   console.log(file);
@@ -49,7 +49,7 @@ function FilterProvider(props: any) {
         },
       }}
     >
-      {props.children}
+      {children}
     </FilterContext.Provider>
   );
 }

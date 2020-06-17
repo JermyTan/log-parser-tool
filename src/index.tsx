@@ -5,12 +5,15 @@ import "semantic-ui-css/semantic.min.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import FilterProvider from "./context-providers/FilterProvider";
+import PreferencesProvider from "./context-providers/PreferencesProvider";
 
 ReactDOM.render(
   <React.StrictMode>
-    <FilterProvider>
-      <App />
-    </FilterProvider>
+    <PreferencesProvider>
+      <FilterProvider>
+        <App />
+      </FilterProvider>
+    </PreferencesProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );
