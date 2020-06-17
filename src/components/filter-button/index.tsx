@@ -81,11 +81,16 @@ function FilterButton({ filename, applyFilter }: Props) {
   return (
     <Modal
       trigger={
-        <Button
+        <Popup
           content="Filter"
-          primary
-          compact
-          onClick={() => setOpenFilterOptions(true)}
+          trigger={
+            <Button
+              icon="filter"
+              primary
+              onClick={() => setOpenFilterOptions(true)}
+            />
+          }
+          position="top center"
         />
       }
       open={openFilterOptions}
@@ -116,6 +121,7 @@ function FilterButton({ filename, applyFilter }: Props) {
               <Button color="green" icon="plus" onClick={() => addFilter()} />
             }
             position="top center"
+            on="hover"
           />
         </span>
       </Modal.Header>

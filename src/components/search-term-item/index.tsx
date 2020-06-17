@@ -37,7 +37,7 @@ function SearchTermItem({
     <Label
       className="search-term-item"
       color={
-        isRangeValue ? undefined : caseSensitiveValueSearch ? "brown" : "grey"
+        isRangeValue ? "violet" : caseSensitiveValueSearch ? "brown" : "grey"
       }
       basic={!isRangeValue && partialValueSearch}
     >

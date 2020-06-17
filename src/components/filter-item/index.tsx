@@ -232,6 +232,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
             />
           }
           position="top center"
+          on="hover"
         />
       </Form.Group>
 

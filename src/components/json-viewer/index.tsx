@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Button, Icon } from "semantic-ui-react";
+import { Button, Icon, Popup } from "semantic-ui-react";
 import FilterButton from "../filter-button";
 import {
   FilterContext,
@@ -328,36 +328,51 @@ function JsonViewer({ filename, data }: Props) {
   return (
     <div className="json-viewer-container">
       <div className="json-viewer-action-buttons">
-        <Icon
-          name="arrow up"
-          color="purple"
-          link={prev > 0}
-          disabled={prev <= 0}
-          circular
-          inverted
-          value={prev}
-          onClick={handleArrowClick}
+        <Popup
+          content="Jump to previous section"
+          trigger={
+            <Button
+              icon="arrow up"
+              color="purple"
+              disabled={prev <= 0}
+              circular
+              value={prev}
+              onClick={handleArrowClick}
+            />
+          }
+          position="top center"
+          on="hover"
         />
-        <Icon
-          name="arrow down"
-          color="purple"
-          link={next < Number.MAX_SAFE_INTEGER}
-          disabled={next >= Number.MAX_SAFE_INTEGER}
-          circular
-          inverted
-          value={next}
-          onClick={handleArrowClick}
+        <Popup
+          content="Jump to next section"
+          trigger={
+            <Button
+              icon="arrow down"
+              color="purple"
+              disabled={next >= Number.MAX_SAFE_INTEGER}
+              circular
+              value={next}
+              onClick={handleArrowClick}
+            />
+          }
+          position="top center"
+          on="hover"
         />
         <FilterButton
           filename={filename}
           applyFilter={() => setFiltering(true)}
         />
-        <Button
+        <Popup
           content="Reset"
-          color="red"
-          compact
-          disabled={!activeFilter}
-          onClick={() => setFiltering(false)}
+          trigger={
+            <Button
+              icon="undo"
+              color="red"
+              disabled={!activeFilter}
+              onClick={() => setFiltering(false)}
+            />
+          }
+          position="top center"
         />
       </div>
 
