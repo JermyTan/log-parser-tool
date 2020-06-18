@@ -4,8 +4,10 @@ import { Filter } from "../../context-providers/FilterProvider";
 import { FilterActions } from "../filter-item-list";
 import SearchTermItemList from "../search-term-item-list";
 import FilterItemInputField from "../filter-item-input-field";
+import FilterItemDatetimeInputField from "../filter-item-datetime-input-field";
 import { parseStringToDate } from "../../utils/types-util";
 import "./index.scss";
+import "react-datetime/css/react-datetime.css";
 
 type Props = {
   filter: Filter;
@@ -114,8 +116,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
       render: () => (
         <Tab.Pane attached={false}>
           <Form.Group className="filter-item-inputs-container">
-            <FilterItemInputField
-              fieldLabel="Lower Bound Value"
+            <FilterItemDatetimeInputField
               inputLabel={
                 isLowerBoundDatetime
                   ? {
@@ -124,9 +125,9 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
                     }
                   : undefined
               }
+              fieldLabel="Lower Bound Value"
               value={lowerBound}
-              onChange={(event, data) => setLowerBound(data.value)}
-              onClear={() => setLowerBound("")}
+              onChange={setLowerBound}
             />
 
             <div className="filter-item-equals-container">
@@ -150,7 +151,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
               <Label className="filter-item-comparison-symbol" content="≤" />
             </div>
 
-            <FilterItemInputField
+            <FilterItemDatetimeInputField
               inputLabel={
                 isUpperBoundDateTime
                   ? {
@@ -161,8 +162,7 @@ function FilterItem({ filter, filterIndex, filterActions }: Props) {
               }
               fieldLabel="Upper Bound Value"
               value={upperBound}
-              onChange={(event, data) => setUpperBound(data.value)}
-              onClear={() => setUpperBound("")}
+              onChange={setUpperBound}
             />
           </Form.Group>
 

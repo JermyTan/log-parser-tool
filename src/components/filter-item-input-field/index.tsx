@@ -6,16 +6,11 @@ import {
   Icon,
   InputOnChangeData,
   StrictLabelProps,
-  StrictIconProps,
 } from "semantic-ui-react";
 
 type Props = {
   fieldLabel?: string;
-  inputLabel?: {
-    content?: string;
-    color?: StrictLabelProps["color"];
-    icon?: StrictIconProps;
-  };
+  inputLabel?: StrictLabelProps;
   placeholder?: string;
   value?: string;
   onChange?: (
