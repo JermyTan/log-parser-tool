@@ -9,11 +9,14 @@ import {
   Grid,
   List,
   Segment,
+  Message,
+  Transition,
 } from "semantic-ui-react";
 import { PreferencesContext } from "../../context-providers/PreferencesProvider";
 import { Filter } from "../../context-providers/FilterProvider";
 import FilterItemInputField from "../filter-item-input-field";
 import "./index.scss";
+import { useStateWithCallback } from "../../utils/custom-hooks";
 
 type Props = {
   currentFilters: Filter[];
@@ -24,6 +27,7 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
   const [openMoreActions, setOpenMoreActions] = useState(false);
   const [title, setTitle] = useState("");
   const [selectedFilterPreference, setSelectedFilterPreference] = useState("");
+  const [showSuccessMsg, setShowSuccessMsg] = useStateWithCallback(false);
   const { filterPreferences, setFilterPreferences } = useContext(
     PreferencesContext
   );
@@ -33,6 +37,7 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
   const resetStates = () => {
     setTitle("");
     setSelectedFilterPreference("");
+    setShowSuccessMsg(false);
     setOpenMoreActions(false);
   };
 
@@ -43,7 +48,6 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
           content="More actions"
           trigger={
             <Button
-              secondary
               icon="ellipsis horizontal"
               onClick={() => setOpenMoreActions(true)}
             />
@@ -65,6 +69,14 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
           <Grid.Column>
             <Form>
               <Header textAlign="center">Save Current Filter Options</Header>
+              <Message
+                hidden={currentFilters.length > 0}
+                header="Empty Filter Options"
+                content="Unable to save empty filter options."
+                negative
+                icon="warning circle"
+                size="tiny"
+              />
               <FilterItemInputField
                 fieldLabel="Title"
                 inputLabel={{ content: "Save As:" }}
@@ -84,11 +96,41 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
                     [trimmedTitle]: currentFilters,
                   });
                   setTitle("");
+                  setShowSuccessMsg(true, () =>
+                    setTimeout(() => setShowSuccessMsg(false), 3000)
+                  );
                 }}
               >
                 <Button.Content hidden content="Save" />
                 <Button.Content visible content={<Icon name="save" />} />
               </Form.Button>
+              <Transition
+                visible={preferenceTitles.some(
+                  (preferenceTitle) => preferenceTitle === trimmedTitle
+                )}
+                unmountOnHide
+              >
+                <Message
+                  header="Title Already Exists"
+                  content="Saving current filter options with this title will override the existing saved filter options."
+                  warning
+                  icon="warning sign"
+                  size="tiny"
+                />
+              </Transition>
+              <Transition
+                visible={showSuccessMsg}
+                unmountOnHide
+                animation="scale"
+              >
+                <Message
+                  header="Success"
+                  content="Current filter options has been successfully saved."
+                  positive
+                  icon="check circle"
+                  size="tiny"
+                />
+              </Transition>
             </Form>
           </Grid.Column>
 
@@ -101,18 +143,20 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
                     selection
                     divided
                     verticalAlign="middle"
-                    items={preferenceTitles.map((title) => {
+                    items={preferenceTitles.map((preferenceTitle) => {
                       return (
                         <List.Item
-                          key={title}
+                          key={preferenceTitle}
                           className="filter-preference-item"
-                          active={title === selectedFilterPreference}
+                          active={preferenceTitle === selectedFilterPreference}
                         >
                           <List.Content
                             className="filter-preference-item-title"
-                            onClick={() => setSelectedFilterPreference(title)}
+                            onClick={() =>
+                              setSelectedFilterPreference(preferenceTitle)
+                            }
                           >
-                            <div>{title}</div>
+                            <div>{preferenceTitle}</div>
                           </List.Content>
 
                           <List.Content className="filter-preference-item-button">
@@ -126,9 +170,10 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
                                   compact
                                   onClick={() => {
                                     const copy = { ...filterPreferences };
-                                    delete copy[title];
+                                    delete copy[preferenceTitle];
                                     setFilterPreferences(copy);
-                                    title === selectedFilterPreference &&
+                                    preferenceTitle ===
+                                      selectedFilterPreference &&
                                       setSelectedFilterPreference("");
                                   }}
                                 />
