@@ -6,7 +6,7 @@ import {
   SearchTerm,
 } from "../../context-providers/FilterProvider";
 import FilterItemList from "../filter-item-list";
-import FilterUsageSection from "../filter-usage-section";
+import FilterUsageButton from "../filter-usage-button";
 import MoreFilterActionsButton from "../more-filter-actions-button";
 import "./index.scss";
 
@@ -18,7 +18,6 @@ type Props = {
 function FilterButton({ filename, applyFilter }: Props) {
   const { getFilters, updateFilters } = useContext(FilterContext);
   const [openFilterOptions, setOpenFilterOptions] = useState(false);
-  const [openFilterUsage, setOpenFilterUsage] = useState(false);
   const [filters, setFilters] = useState<Filter[]>([]);
   const filteredResults = filters.filter(
     (filter) => filter.searchGroup.length > 0 || filter.searchTerms.length > 0
@@ -75,7 +74,6 @@ function FilterButton({ filename, applyFilter }: Props) {
   const handleApply = () => {
     updateFilters(filename, filteredResults);
     applyFilter();
-    setOpenFilterUsage(false);
     setOpenFilterOptions(false);
   };
 
@@ -96,23 +94,12 @@ function FilterButton({ filename, applyFilter }: Props) {
       }
       open={openFilterOptions}
       onOpen={() => setFilters(getFilters(filename))}
-      onClose={() => {
-        setOpenFilterUsage(false);
-        setOpenFilterOptions(false);
-      }}
+      onClose={() => setOpenFilterOptions(false)}
       size="large"
     >
       <Modal.Header className="filter-options-header">
         <span>
-          Filter Options{" "}
-          {/*
-          <Button
-            className="filter-usage-button"
-            content="Usage"
-            color="teal"
-            onClick={() => setOpenFilterUsage(!openFilterUsage)}
-          />
-          */}
+          Filter Options <FilterUsageButton />
         </span>
 
         <span>
@@ -131,8 +118,6 @@ function FilterButton({ filename, applyFilter }: Props) {
         </span>
       </Modal.Header>
 
-      <FilterUsageSection openFilterUsage={openFilterUsage} />
-
       <Modal.Content scrolling>
         <FilterItemList
           filters={filters}
@@ -145,13 +130,7 @@ function FilterButton({ filename, applyFilter }: Props) {
         />
       </Modal.Content>
       <Modal.Actions>
-        <Button
-          content="Back"
-          onClick={() => {
-            setOpenFilterUsage(false);
-            setOpenFilterOptions(false);
-          }}
-        />
+        <Button content="Back" onClick={() => setOpenFilterOptions(false)} />
         <Button primary content="Apply" onClick={handleApply} />
       </Modal.Actions>
     </Modal>

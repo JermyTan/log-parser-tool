@@ -1,6 +1,7 @@
 import React from "react";
 import { Form, Input, Icon, StrictLabelProps } from "semantic-ui-react";
 import Datetime from "react-datetime";
+import "./index.scss";
 
 type Props = {
   fieldLabel?: string;

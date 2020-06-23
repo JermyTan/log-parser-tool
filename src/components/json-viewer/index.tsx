@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Button, Icon, Popup } from "semantic-ui-react";
+import { Button, Popup } from "semantic-ui-react";
 import FilterButton from "../filter-button";
 import {
   FilterContext,

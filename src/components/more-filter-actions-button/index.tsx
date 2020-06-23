@@ -60,7 +60,6 @@ function MoreFilterActionsButton({ currentFilters, setCurrentFilters }: Props) {
         resetStates();
       }}
       closeIcon
-      style={{ justifyContent: "center" }}
     >
       <Modal.Header>More Actions</Modal.Header>
 
