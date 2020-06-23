@@ -141,6 +141,11 @@ export default class LazyLog extends Component {
      */
     onHighlight: func,
     /**
+     * Execute a function when the row has been clicked.
+     * Is passed a single argument which is the row number.
+     */
+    onRowClick: func,
+    /**
      * A fixed row height in pixels. Controls how tall a line is,
      * as well as the `lineHeight` style of the line's text.
      * Defaults to `19`.
@@ -207,6 +212,7 @@ export default class LazyLog extends Component {
     extraLines: 0,
     onError: null,
     onHighlight: null,
+    onRowClick: null,
     onLoad: null,
     formatPart: null,
     websocketOptions: {},
@@ -626,6 +632,7 @@ export default class LazyLog extends Component {
       selectableLines,
       lineClassName,
       highlightLineClassName,
+      onRowClick,
     } = this.props;
     const {
       highlight,
@@ -653,6 +660,7 @@ export default class LazyLog extends Component {
         highlight={highlight.includes(number)}
         onLineNumberClick={this.handleHighlight}
         data={ansiparse(decode(linesToRender.get(index)))}
+        onRowClick={() => onRowClick(number)}
       />
     );
   };

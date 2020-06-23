@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Button, Popup } from "semantic-ui-react";
+import { Button, Popup, ButtonProps } from "semantic-ui-react";
 import FilterButton from "../filter-button";
 import {
   FilterContext,
@@ -24,6 +24,12 @@ type Props = {
 type DataState = {
   dataString: string;
   jumpIndexes: any;
+  dataLines: DataLine[];
+};
+
+type DataLine = {
+  value: string;
+  collapsedLines: DataLine[];
 };
 
 // 1-based
@@ -34,12 +40,15 @@ type AdjacentJumpIndexes = {
 
 const computeDataState = (data: any): DataState => {
   const dataString = JSON.stringify(data, null, 2);
+  const dataStringArray = dataString.split("\n");
+  const dataLines = dataStringArray.map((value) => {
+    return { value, collapsedLines: [] };
+  });
 
   if (!data?.history && !Array.isArray(data)) {
-    return { dataString, jumpIndexes: RBTree() };
+    return { dataString, jumpIndexes: RBTree(), dataLines };
   }
 
-  const dataStringArray = dataString.split("\n");
   let jumpIndexes = RBTree();
 
   if (Array.isArray(data)) {
@@ -62,7 +71,7 @@ const computeDataState = (data: any): DataState => {
   }
 
   console.log("jump indexes", jumpIndexes.length);
-  return { dataString, jumpIndexes };
+  return { dataString, jumpIndexes, dataLines };
 };
 
 function JsonViewer({ filename, data }: Props) {
@@ -72,6 +81,7 @@ function JsonViewer({ filename, data }: Props) {
   const [originalDataState, setOriginalDataState] = useState<DataState>({
     dataString: "",
     jumpIndexes: RBTree(),
+    dataLines: [{ value: "", collapsedLines: [] }],
   });
   const [activeDataState, setActiveDataState] = useState(originalDataState);
   const [adjacentJumpIndexes, setAdjacentJumpIndexes] = useState<
@@ -100,7 +110,7 @@ function JsonViewer({ filename, data }: Props) {
     setCurrentJumpIndex(
       activeDataState.jumpIndexes.get(newIndex) ? newIndex : undefined
     );
-    console.log(`new prev: ${newPrev}, new next: ${newNext}`);
+    //console.log(`new prev: ${newPrev}, new next: ${newNext}`);
   };
 
   useEffect(() => {
@@ -112,7 +122,7 @@ function JsonViewer({ filename, data }: Props) {
 
   const onScroll = ({ scrollTop }: any) => {
     const currentLineNum = Math.round(scrollTop / 19) + 1;
-    console.log(`current line num: ${currentLineNum}`);
+    //console.log(`current line num: ${currentLineNum}`);
 
     const { prev, next } = adjacentJumpIndexes;
 
@@ -316,14 +326,95 @@ function JsonViewer({ filename, data }: Props) {
     setSelectedJumpIndex(1, () => processJson(activeFilter, filters));
   }, [filters, activeFilter]);
 
-  console.log(filters.length);
+  //console.log(filters.length);
 
-  const { prev, next } = adjacentJumpIndexes;
-
-  const handleArrowClick = (event: any, data: any) => {
+  const handleArrowClick = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    data: ButtonProps
+  ) => {
     const newJumpIndex = data.value;
     setSelectedJumpIndex(newJumpIndex);
   };
+
+  const handleRowClick = (lineNum: number) => {
+    const { dataLines } = activeDataState;
+
+    // ignore extra last line
+    if (lineNum > dataLines.length) {
+      return;
+    }
+
+    const { collapsedLines, value } = dataLines[lineNum - 1];
+    // expand
+    if (collapsedLines.length > 0) {
+      // expand data lines
+      dataLines.splice(lineNum - 1, 1, ...collapsedLines);
+      // collapse
+    } else if (value.endsWith("{") || value.endsWith("[")) {
+      const openBracket = value.slice(-1);
+      const numLeadingWhiteSpaces = value.search(/\S|$/);
+      const closingBracket = openBracket === "{" ? "}" : "]";
+      const matchingIndentedClosingBracket = `${" ".repeat(
+        numLeadingWhiteSpaces
+      )}${closingBracket}`;
+
+      // find the line containing the corresponding closing bracket
+      let endIndex = lineNum - 1;
+      while (
+        !dataLines[++endIndex].value.startsWith(matchingIndentedClosingBracket)
+      );
+
+      const closingDataLine = dataLines[endIndex];
+      const newSelectedDataLine: DataLine = {
+        value: `${value}...${closingDataLine.value.trim()}`,
+        collapsedLines: [],
+      };
+
+      // collapse data lines
+      const newCollapsedLines = dataLines.splice(
+        lineNum - 1,
+        endIndex - lineNum + 2,
+        newSelectedDataLine
+      );
+      dataLines[lineNum - 1].collapsedLines = newCollapsedLines;
+    } else {
+      return;
+    }
+
+    const dataStringArray = dataLines.map((dataLine) => dataLine.value);
+    const dataString = dataStringArray.join("\n");
+
+    if (!data?.history && !Array.isArray(data)) {
+      setActiveDataState({ dataString, jumpIndexes: RBTree(), dataLines });
+      return;
+    }
+
+    let jumpIndexes = RBTree();
+
+    if (Array.isArray(data)) {
+      dataStringArray.forEach((line, index) => {
+        if (
+          line.startsWith("  ") &&
+          !line.startsWith("   ") &&
+          !line.startsWith("  }") &&
+          !line.startsWith("  ]")
+        ) {
+          jumpIndexes = jumpIndexes.insert(index + 1, true);
+        }
+      });
+    } else {
+      dataStringArray.forEach((line, index) => {
+        if (line.startsWith('      "action":')) {
+          jumpIndexes = jumpIndexes.insert(index + 1, true);
+        }
+      });
+    }
+
+    console.log("jump indexes", jumpIndexes.length);
+    setActiveDataState({ dataString, jumpIndexes, dataLines });
+  };
+
+  const { prev, next } = adjacentJumpIndexes;
 
   return (
     <div className="json-viewer-container">
@@ -385,6 +476,7 @@ function JsonViewer({ filename, data }: Props) {
         onScroll={onScroll}
         scrollToAlignment="start"
         scrollToLine={selectedJumpIndex}
+        onRowClick={handleRowClick}
       />
     </div>
   );

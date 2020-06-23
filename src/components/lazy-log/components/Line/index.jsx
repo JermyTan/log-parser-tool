@@ -65,7 +65,7 @@ export default class Line extends Component {
     };
 
     return (
-      <div className={classes} style={lineStyle}>
+      <div className={classes} style={lineStyle} onClick={onRowClick}>
         <LineNumber
           number={number}
           highlight={highlight}
@@ -73,7 +73,6 @@ export default class Line extends Component {
         />
         <LineContent
           number={number}
-          onClick={onRowClick}
           formatPart={formatPart}
           data={data}
         />
