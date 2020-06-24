@@ -189,6 +189,11 @@ export default class LazyLog extends Component {
      * Flag to enable/disable case insensitive search
      */
     caseInsensitive: bool,
+    /**
+     * Execute a function when search is enabled/disabled.
+     * Is passed a single argument which is the true/false.
+     */
+    activeSearch: func,
   };
 
   static defaultProps = {
@@ -221,6 +226,7 @@ export default class LazyLog extends Component {
     lineClassName: "",
     highlightLineClassName: "",
     caseInsensitive: false,
+    activeSearch: null,
   };
 
   static getDerivedStateFromProps(
@@ -469,12 +475,13 @@ export default class LazyLog extends Component {
 
   handleSearch = (keywords) => {
     const { resultLines, searchKeywords } = this.state;
-    const { caseInsensitive, stream, websocket } = this.props;
+    const { caseInsensitive, stream, websocket, activeSearch } = this.props;
     const currentResultLines =
       !stream && !websocket && keywords === searchKeywords
         ? resultLines
         : searchLines(keywords, this.encodedLog, caseInsensitive);
 
+    activeSearch && activeSearch(true);
     this.setState(
       {
         resultLines: currentResultLines,
@@ -494,18 +501,24 @@ export default class LazyLog extends Component {
   };
 
   handleClearSearch = () => {
+    const { activeSearch } = this.props;
+    const { isFilteringLinesWithMatches } = this.state;
+    activeSearch && activeSearch(false || isFilteringLinesWithMatches);
     this.setState({
       isSearching: false,
       searchKeywords: "",
       resultLines: [],
       filteredLines: List(),
       resultLineUniqueIndexes: [],
-      isFilteringLinesWithMatches: this.state.isFilteringLinesWithMatches,
+      isFilteringLinesWithMatches: isFilteringLinesWithMatches,
       scrollToIndex: 0,
     });
   };
 
   handleFilterLinesWithMatches = (isFilterEnabled) => {
+    const { activeSearch } = this.props;
+    const { isSearching } = this.state;
+    activeSearch && activeSearch(isFilterEnabled || isSearching);
     this.setState(
       {
         isFilteringLinesWithMatches: isFilterEnabled,

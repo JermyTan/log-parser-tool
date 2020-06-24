@@ -22,6 +22,7 @@ type Props = {
 };
 
 type DataState = {
+  data: any;
   dataString: string;
   jumpIndexes: any;
   dataLines: DataLine[];
@@ -38,40 +39,50 @@ type AdjacentJumpIndexes = {
   next: number;
 };
 
+type QueueNode = {
+  node: any;
+  componentIndex: number;
+};
+
 const computeDataState = (data: any): DataState => {
   const dataString = JSON.stringify(data, null, 2);
   const dataStringArray = dataString.split("\n");
-  const dataLines = dataStringArray.map((value) => {
+  const dataLines: DataLine[] = dataStringArray.map((value) => {
     return { value, collapsedLines: [] };
   });
+  const jumpIndexes = computeJumpIndexes(data, dataLines);
 
-  if (!data?.history && !Array.isArray(data)) {
-    return { dataString, jumpIndexes: RBTree(), dataLines };
-  }
+  return { data, dataString, jumpIndexes, dataLines };
+};
 
+const computeJumpIndexes = (data: any, dataLines: DataLine[]): any => {
   let jumpIndexes = RBTree();
 
+  if (!data?.history && !Array.isArray(data)) {
+    return jumpIndexes;
+  }
+
   if (Array.isArray(data)) {
-    dataStringArray.forEach((line, index) => {
+    dataLines.forEach(({ value }, index) => {
       if (
-        line.startsWith("  ") &&
-        !line.startsWith("   ") &&
-        !line.startsWith("  }") &&
-        !line.startsWith("  ]")
+        value.startsWith("  ") &&
+        !value.startsWith("   ") &&
+        !value.startsWith("  }") &&
+        !value.startsWith("  ]")
       ) {
         jumpIndexes = jumpIndexes.insert(index + 1, true);
       }
     });
   } else {
-    dataStringArray.forEach((line, index) => {
-      if (line.startsWith('      "action":')) {
+    dataLines.forEach(({ value }, index) => {
+      if (value.startsWith('      "action":')) {
         jumpIndexes = jumpIndexes.insert(index + 1, true);
       }
     });
   }
 
-  console.log("jump indexes", jumpIndexes.length);
-  return { dataString, jumpIndexes, dataLines };
+  //console.log("jump indexes", jumpIndexes.length);
+  return jumpIndexes;
 };
 
 function JsonViewer({ filename, data }: Props) {
@@ -79,11 +90,14 @@ function JsonViewer({ filename, data }: Props) {
   const filters = getFilters(filename);
   const [isFiltering, setFiltering] = useState(false);
   const [originalDataState, setOriginalDataState] = useState<DataState>({
+    data: "",
     dataString: "",
     jumpIndexes: RBTree(),
     dataLines: [{ value: "", collapsedLines: [] }],
   });
-  const [activeDataState, setActiveDataState] = useState(originalDataState);
+  const [activeDataState, setActiveDataState] = useStateWithCallback(
+    originalDataState
+  );
   const [adjacentJumpIndexes, setAdjacentJumpIndexes] = useState<
     AdjacentJumpIndexes
   >({ prev: 0, next: Number.MAX_SAFE_INTEGER });
@@ -93,6 +107,8 @@ function JsonViewer({ filename, data }: Props) {
   const [currentJumpIndex, setCurrentJumpIndex] = useState<
     number | undefined
   >();
+  const [currentLineNum, setCurrentLineNum] = useState<number>(1);
+  const [isSearching, setSearching] = useState(false);
   const activeFilter = isFiltering && filters.length > 0;
 
   const prepareDataForRender = (dataState: DataState) => {
@@ -102,15 +118,12 @@ function JsonViewer({ filename, data }: Props) {
     setAdjacentJumpIndexes({ prev: 0, next: firstJumpIndex });
   };
 
-  const updateAdjacentJumpIndexes = (newIndex: number) => {
-    const newPrev = activeDataState.jumpIndexes.lt(newIndex).key ?? 0;
-    const newNext =
-      activeDataState.jumpIndexes.gt(newIndex).key ?? Number.MAX_SAFE_INTEGER;
+  const updateAdjacentJumpIndexes = (newIndex: number, jumpIndexes: any) => {
+    const newPrev = jumpIndexes.lt(newIndex).key ?? 0;
+    const newNext = jumpIndexes.gt(newIndex).key ?? Number.MAX_SAFE_INTEGER;
     setAdjacentJumpIndexes({ prev: newPrev, next: newNext });
-    setCurrentJumpIndex(
-      activeDataState.jumpIndexes.get(newIndex) ? newIndex : undefined
-    );
-    //console.log(`new prev: ${newPrev}, new next: ${newNext}`);
+    setCurrentJumpIndex(jumpIndexes.get(newIndex) ? newIndex : undefined);
+    console.log(`new prev: ${newPrev}, new next: ${newNext}`);
   };
 
   useEffect(() => {
@@ -121,8 +134,9 @@ function JsonViewer({ filename, data }: Props) {
   }, []);
 
   const onScroll = ({ scrollTop }: any) => {
-    const currentLineNum = Math.round(scrollTop / 19) + 1;
-    //console.log(`current line num: ${currentLineNum}`);
+    const lineNum = Math.round(scrollTop / 19) + 1;
+    console.log(`current line num: ${lineNum}`);
+    setCurrentLineNum(lineNum);
 
     const { prev, next } = adjacentJumpIndexes;
 
@@ -131,11 +145,11 @@ function JsonViewer({ filename, data }: Props) {
     }
 
     if (
-      currentLineNum <= prev ||
-      currentLineNum >= next ||
-      (currentJumpIndex && currentJumpIndex !== currentLineNum)
+      lineNum <= prev ||
+      lineNum >= next ||
+      (currentJumpIndex && currentJumpIndex !== lineNum)
     ) {
-      updateAdjacentJumpIndexes(currentLineNum);
+      updateAdjacentJumpIndexes(lineNum, activeDataState.jumpIndexes);
     }
   };
 
@@ -148,10 +162,7 @@ function JsonViewer({ filename, data }: Props) {
     const result: any[] = [];
 
     filters.forEach((filter) => {
-      const queue = new Queue<{
-        node: any;
-        componentIndex: number;
-      }>();
+      const queue = new Queue<QueueNode>();
       const path = filter.searchGroup;
       const numComponents = path.length;
       const candidateResults: any[] = [];
@@ -196,10 +207,7 @@ function JsonViewer({ filename, data }: Props) {
         let numValidSearchTerms = 0;
 
         searchTerms.forEach((searchTerm) => {
-          const queue = new Queue<{
-            node: any;
-            componentIndex: number;
-          }>();
+          const queue = new Queue<QueueNode>();
           const path = searchTerm.keyPath;
           const numComponents = path.length;
 
@@ -337,10 +345,10 @@ function JsonViewer({ filename, data }: Props) {
   };
 
   const handleRowClick = (lineNum: number) => {
-    const { dataLines } = activeDataState;
+    const { data, dataLines } = activeDataState;
 
-    // ignore extra last line
-    if (lineNum > dataLines.length) {
+    // ignore if isSearching or clicked on extra last line
+    if (isSearching || lineNum > dataLines.length) {
       return;
     }
 
@@ -351,9 +359,9 @@ function JsonViewer({ filename, data }: Props) {
       dataLines.splice(lineNum - 1, 1, ...collapsedLines);
       // collapse
     } else if (value.endsWith("{") || value.endsWith("[")) {
-      const openBracket = value.slice(-1);
+      const openingBracket = value.slice(-1);
       const numLeadingWhiteSpaces = value.search(/\S|$/);
-      const closingBracket = openBracket === "{" ? "}" : "]";
+      const closingBracket = openingBracket === "{" ? "}" : "]";
       const matchingIndentedClosingBracket = `${" ".repeat(
         numLeadingWhiteSpaces
       )}${closingBracket}`;
@@ -383,35 +391,12 @@ function JsonViewer({ filename, data }: Props) {
 
     const dataStringArray = dataLines.map((dataLine) => dataLine.value);
     const dataString = dataStringArray.join("\n");
-
-    if (!data?.history && !Array.isArray(data)) {
-      setActiveDataState({ dataString, jumpIndexes: RBTree(), dataLines });
-      return;
-    }
-
-    let jumpIndexes = RBTree();
-
-    if (Array.isArray(data)) {
-      dataStringArray.forEach((line, index) => {
-        if (
-          line.startsWith("  ") &&
-          !line.startsWith("   ") &&
-          !line.startsWith("  }") &&
-          !line.startsWith("  ]")
-        ) {
-          jumpIndexes = jumpIndexes.insert(index + 1, true);
-        }
-      });
-    } else {
-      dataStringArray.forEach((line, index) => {
-        if (line.startsWith('      "action":')) {
-          jumpIndexes = jumpIndexes.insert(index + 1, true);
-        }
-      });
-    }
-
-    console.log("jump indexes", jumpIndexes.length);
-    setActiveDataState({ dataString, jumpIndexes, dataLines });
+    const jumpIndexes = computeJumpIndexes(data, dataLines);
+    setActiveDataState({ data, dataString, jumpIndexes, dataLines }, () => {
+      setSelectedJumpIndex(currentLineNum, () =>
+        updateAdjacentJumpIndexes(currentLineNum, jumpIndexes)
+      );
+    });
   };
 
   const { prev, next } = adjacentJumpIndexes;
@@ -425,7 +410,7 @@ function JsonViewer({ filename, data }: Props) {
             <Button
               icon="arrow up"
               color="purple"
-              disabled={prev <= 0}
+              disabled={prev <= 0 || isSearching}
               circular
               value={prev}
               onClick={handleArrowClick}
@@ -440,7 +425,7 @@ function JsonViewer({ filename, data }: Props) {
             <Button
               icon="arrow down"
               color="purple"
-              disabled={next >= Number.MAX_SAFE_INTEGER}
+              disabled={next >= Number.MAX_SAFE_INTEGER || isSearching}
               circular
               value={next}
               onClick={handleArrowClick}
@@ -477,6 +462,7 @@ function JsonViewer({ filename, data }: Props) {
         scrollToAlignment="start"
         scrollToLine={selectedJumpIndex}
         onRowClick={handleRowClick}
+        activeSearch={setSearching}
       />
     </div>
   );
