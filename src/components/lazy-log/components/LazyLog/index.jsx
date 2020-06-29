@@ -34,8 +34,8 @@ import { lazyLog, searchMatch } from "./index.module.css";
 // Setting a hard limit on lines since browsers have trouble with heights
 // starting at around 16.7 million pixels and up
 
-// Jeremy: hard increase to 100 million
-const BROWSER_PIXEL_LIMIT = 100 * 1000000;
+// Jeremy: hard increase to 1 billion
+const BROWSER_PIXEL_LIMIT = 1e9;
 
 export default class LazyLog extends Component {
   static propTypes = {
@@ -217,7 +217,7 @@ export default class LazyLog extends Component {
     extraLines: 0,
     onError: null,
     onHighlight: null,
-    onRowClick: null,
+    onRowClick: () => {},
     onLoad: null,
     formatPart: null,
     websocketOptions: {},

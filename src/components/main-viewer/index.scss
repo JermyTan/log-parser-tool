@@ -1,0 +1,46 @@
+.main-viewer-container {
+  padding: 2rem 0;
+}
+
+.main-viewer-header-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.main-viewer-header {
+  margin: 0;
+}
+
+.home-button {
+  margin-left: 1rem !important;
+}
+
+.main-viewer-fullscreen {
+  display: flex;
+  margin: 1rem 0;
+  justify-content: flex-end;
+}
+
+.main-viewer-loader:before {
+  background: transparent !important;
+}
+
+.main-viewer-loader:after {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  border-top-color: white !important;
+}
+
+.main-viewer-pane {
+  height: 85vh;
+  color: black;
+}
+
+.main-viewer-empty-log-label {
+  text-align: center;
+}
+
+body ::-webkit-scrollbar {
+  background-color: white;
+}

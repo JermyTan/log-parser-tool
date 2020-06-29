@@ -1,102 +1,99 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
-import {
-  Container,
-  Segment,
-  Form,
-  Grid,
-  Icon,
-  Header,
-} from "semantic-ui-react";
-import { URL_QUERY } from "../../../utils/constants";
+import React from "react";
+import { Container, Segment, Grid, Icon, Header } from "semantic-ui-react";
+import { useDropzone } from "react-dropzone";
 import "./index.scss";
+import styled from "styled-components";
+import { useLogsFromUpload } from "../../../utils/custom-hooks";
+import MainViewer from "../../main-viewer";
 
-const withHttp = (url: string) =>
-  url.replace(/^(?:(.*:)?\/\/)?(.*)/i, (match, schemma, nonSchemmaUrl) =>
-    schemma ? match : `http://${nonSchemmaUrl}`
-  );
+const getColor = ({ isDragAccept, isDragReject, isDragActive }: any) => {
+  if (isDragAccept) {
+    return "#00e676";
+  }
+  if (isDragReject) {
+    return "#ff1744";
+  }
+  if (isDragActive) {
+    return "#2196f3";
+  }
+  return "#eeeeee";
+};
+
+const DragNDropContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 20rem;
+  border-width: 2px;
+  border-radius: 2px;
+  border-color: ${(props) => getColor(props)};
+  border-style: dashed;
+  background-color: #fafafa;
+  color: #bdbdbd;
+  outline: none;
+  transition: border 0.24s ease-in-out;
+  cursor: pointer;
+`;
 
 function Homepage() {
-  const [gfsServerUrl, setGfsServerUrl] = useState("");
-  const [gfsFilename, setGfsFilename] = useState("");
-  const [requestorId, setRequestorId] = useState("");
-  const [gfsToken, setGfsToken] = useState("");
-  const [loading, setLoading] = useState(false);
-  const history = useHistory();
-
-  const allFieldsFilled = () =>
-    gfsServerUrl !== "" &&
-    gfsFilename !== "" &&
-    requestorId !== "" &&
-    gfsToken !== "";
-
-  const onProcess = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      history.push(
-        `/logs?${URL_QUERY}=${withHttp(
-          gfsServerUrl
-        )}/download/${gfsFilename}?userid=${requestorId}%26token=${gfsToken}`
-      );
-    }, 1000);
-  };
+  const {
+    acceptedFiles,
+    getRootProps,
+    getInputProps,
+    isDragAccept,
+    isDragActive,
+    isDragReject,
+  } = useDropzone({
+    accept: "application/zip",
+    multiple: false,
+  });
+  const [loading, invalid, logs] = useLogsFromUpload(acceptedFiles?.[0]);
 
   return (
-    <main className="homepage">
-      <Container>
-        <Segment padded raised secondary>
-          <Grid columns="2" relaxed stackable verticalAlign="middle">
-            <Grid.Column>
-              <Form>
-                <Form.Input
-                  label="GFS Server URL"
-                  required
-                  placeholder="https://f.haiserve.com"
-                  value={gfsServerUrl}
-                  onChange={(event, data) => setGfsServerUrl(data.value.trim())}
-                />
-                <Form.Input
-                  label="GFS Filename"
-                  required
-                  placeholder="6ba213f000..."
-                  value={gfsFilename}
-                  onChange={(event, data) => setGfsFilename(data.value.trim())}
-                />
-                <Form.Input
-                  label="Requestor's SeaTalk User ID"
-                  required
-                  placeholder="12345"
-                  value={requestorId}
-                  onChange={(event, data) => setRequestorId(data.value.trim())}
-                />
-                <Form.Input
-                  label="GFS Token"
-                  required
-                  value={gfsToken}
-                  onChange={(event, data) => setGfsToken(data.value.trim())}
-                />
-                <Form.Button
-                  primary
-                  content="Process"
-                  fluid
-                  disabled={!allFieldsFilled()}
-                  loading={loading}
-                  onClick={onProcess}
-                />
-              </Form>
-            </Grid.Column>
-            <Grid.Column textAlign="center">
-              <Icon
-                className="homepage-icon"
-                name="file alternate"
-                size="massive"
-              />
-              <Header as="h1">Log Parser Tool</Header>
-            </Grid.Column>
-          </Grid>
-        </Segment>
-      </Container>
+    <main>
+      {acceptedFiles.length > 0 ? (
+        <MainViewer loading={loading} invalid={invalid} logs={logs} />
+      ) : (
+        <div className="homepage-container">
+          <Container>
+            <Segment padded raised secondary>
+              <Grid
+                columns="2"
+                relaxed
+                stackable
+                verticalAlign="middle"
+                textAlign="center"
+              >
+                <Grid.Column>
+                  <DragNDropContainer
+                    {...getRootProps({
+                      isDragAccept,
+                      isDragActive,
+                      isDragReject,
+                    })}
+                  >
+                    <input {...getInputProps()} />
+                    <Header icon>
+                      <Icon name="file archive outline" />
+                      Drag and Drop, or Click to upload the zip file.
+                    </Header>
+                  </DragNDropContainer>
+                </Grid.Column>
+                <Grid.Column>
+                  <Icon
+                    className="homepage-icon"
+                    name="file alternate"
+                    size="massive"
+                  />
+                  <Header as="h1">Log Parser Tool</Header>
+                </Grid.Column>
+              </Grid>
+            </Segment>
+          </Container>
+        </div>
+      )}
     </main>
   );
 }

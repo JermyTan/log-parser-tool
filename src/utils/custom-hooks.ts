@@ -37,7 +37,74 @@ export function useStateWithCallback<T>(
   ];
 }
 
-export function useLogs(): [boolean, boolean, any] {
+async function loadLogs(
+  zippedLogsBuffer: Buffer,
+  setLogs: (newValue: any) => void
+) {
+  const zip = new AdmZip(zippedLogsBuffer);
+  const zipEntries = zip
+    .getEntries()
+    .filter(
+      (entry) =>
+        entry.name.startsWith("app") ||
+        entry.name.startsWith("core") ||
+        entry.name.startsWith("log") ||
+        entry.name.startsWith("net") ||
+        entry.name.startsWith("state")
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const results: any = {};
+  zipEntries.forEach((value) => {
+    const fileName = value.name.endsWith(".gg")
+      ? value.name.replace(".gg", ".json")
+      : value.name;
+    results[fileName] = undefined;
+
+    zip.readAsTextAsync(value, (data) => {
+      if (value.name.endsWith(".gg")) {
+        data = decrypt(data);
+      }
+      if (value.name.endsWith(".json")) {
+        data = JSON.parse(data);
+      }
+      results[fileName] = data;
+      setLogs({ ...results });
+      //console.log("Number of lines:", data.split("\n").length);
+      console.log(results);
+    });
+  });
+  setLogs({ ...results });
+}
+
+export function useLogsFromUpload(zipFile?: File): [boolean, boolean, any] {
+  const [loading, setLoading] = useState(true);
+  const [invalid, setInvalid] = useState(false);
+  const [logs, setLogs] = useState<any>({});
+
+  useEffect(() => {
+    if (zipFile) {
+      try {
+        const fileReader = new FileReader();
+        fileReader.onload = () =>
+          loadLogs(
+            arrayBufferToBuffer(fileReader.result),
+            setLogs
+          ).finally(() => setLoading(false));
+        fileReader.readAsArrayBuffer(zipFile);
+      } catch {
+        setInvalid(true);
+        setLoading(false);
+      }
+    } else {
+      setInvalid(false);
+      setLoading(true);
+    }
+  }, [zipFile]);
+
+  return [loading, invalid, logs];
+}
+
+export function useLogsFromUrl(): [boolean, boolean, any] {
   const [loading, setLoading] = useState(true);
   const [invalid, setInvalid] = useState(false);
   const [logs, setLogs] = useState<any>({});
@@ -53,34 +120,9 @@ export function useLogs(): [boolean, boolean, any] {
         .get(`${proxyServerUrl}/${url}`, {
           responseType: "arraybuffer",
         })
-        .then((response) => {
-          const zip = new AdmZip(arrayBufferToBuffer(response.data));
-          const zipEntries = zip
-            .getEntries()
-            .sort((a, b) => a.name.localeCompare(b.name));
-
-          const results: any = {};
-          zipEntries.forEach((value) => {
-            const fileName = value.name.endsWith(".gg")
-              ? value.name.replace(".gg", ".json")
-              : value.name;
-            results[fileName] = undefined;
-
-            zip.readAsTextAsync(value, (data) => {
-              if (value.name.endsWith(".gg")) {
-                data = decrypt(data);
-              }
-              if (value.name.endsWith(".json")) {
-                data = JSON.parse(data);
-              }
-              results[fileName] = data;
-              setLogs({ ...results });
-              //console.log("Number of lines:", data.split("\n").length);
-              console.log(results);
-            });
-          });
-          setLogs({ ...results });
-        })
+        .then((response) =>
+          loadLogs(arrayBufferToBuffer(response.data), setLogs)
+        )
         .catch(() => setInvalid(true))
         .finally(() => setLoading(false));
     } else {
