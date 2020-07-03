@@ -56,13 +56,11 @@ function MainViewer({ loading, invalid, logs }: Props) {
 
   return (
     <Container className="main-viewer-container">
-      <div className="main-viewer-header-container">
-        <h1
-          className="main-viewer-header"
-          style={isFullscreen ? hiddenStyle : {}}
-        >
-          Logs
-        </h1>
+      <div
+        className="main-viewer-header-container"
+        style={isFullscreen ? hiddenStyle : {}}
+      >
+        <h1 className="main-viewer-header">Logs</h1>
         <Button
           className="home-button"
           content="Home"
