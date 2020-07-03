@@ -11,6 +11,7 @@ import {
 import { LazyLog } from "../lazy-log/components";
 import Fullscreen from "../fullscreen";
 import JsonViewer from "../json-viewer";
+import DownloadButton from "../download-button";
 import "./index.scss";
 
 type Props = {
@@ -61,12 +62,20 @@ function MainViewer({ loading, invalid, logs }: Props) {
         style={isFullscreen ? hiddenStyle : {}}
       >
         <h1 className="main-viewer-header">Logs</h1>
-        <Button
-          className="home-button"
-          content="Home"
-          primary
-          onClick={() => (window.location.href = "/")}
+        <Popup
+          content="Back to home"
+          trigger={
+            <Button
+              className="header-button"
+              icon="home"
+              primary
+              onClick={() => (window.location.href = "/")}
+            />
+          }
+          position="bottom center"
         />
+
+        <DownloadButton className="header-button" logs={logs} />
       </div>
 
       {!invalid && !loading ? (
