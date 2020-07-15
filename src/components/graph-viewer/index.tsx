@@ -9,8 +9,15 @@ import {
 } from "recharts";
 import "./index.scss";
 
+type DataShape = {
+  ts: number;
+  processes: {
+    [process: string]: [number, number];
+  };
+};
+
 type Props = {
-  data: any[];
+  data: DataShape[];
 };
 
 const colors = [
@@ -25,20 +32,43 @@ const colors = [
 ];
 
 function GraphViewer({ data }: Props) {
-  const [processes, setProcesses] = useState<any[]>([]);
+  const [processes, setProcesses] = useState<string[]>([]);
+  const [parsedData, setParsedData] = useState<DataShape[]>([]);
 
   useEffect(() => {
-    const lastEntryProcesses = data.slice(-1).pop()?.["processes"];
-    lastEntryProcesses && setProcesses(Object.entries(lastEntryProcesses));
+    // add total field
+    const parsedData = data.map(
+      (entry): DataShape => {
+        let totalCpu = 0;
+        let totalMemory = 0;
+        const currentProcesses = entry.processes;
+        Object.values(currentProcesses).forEach(([cpu, memory]) => {
+          totalCpu += cpu;
+          totalMemory += memory;
+        });
+
+        return {
+          ...entry,
+          processes: {
+            Total: [totalCpu, Math.round(totalMemory * 10) / 10],
+            ...currentProcesses,
+          },
+        };
+      }
+    );
+
+    const lastEntryProcesses = parsedData.slice(-1).pop()?.["processes"];
+    lastEntryProcesses && setProcesses(Object.keys(lastEntryProcesses));
+    setParsedData(parsedData);
   }, [data]);
 
-  console.log(data);
+  console.log(processes);
   return (
     <div className="graph-viewer-container">
       <h2>CPU Usages</h2>
       <ResponsiveContainer height="40%">
         <AreaChart
-          data={data}
+          data={parsedData}
           syncId="usages"
           margin={{ top: 5, right: 5, bottom: 10, left: 20 }}
         >
@@ -49,6 +79,7 @@ function GraphViewer({ data }: Props) {
             scale="time"
             label={{ value: "Timestamp", position: "insideBottom", offset: -5 }}
             allowDecimals={false}
+            name="Timestamp"
           />
           <YAxis
             type="number"
@@ -61,14 +92,21 @@ function GraphViewer({ data }: Props) {
             allowDecimals={false}
             unit="%"
           />
-          <Tooltip />
-          {processes.map(([process], index) => (
+          <Tooltip
+            itemSorter={({ name }) => {
+              return -processes.indexOf(name);
+            }}
+          />
+          {processes.map((process, index) => (
             <Area
               dataKey={`processes.${process}.0`}
               type="monotone"
               stroke={colors[index]}
               fill={colors[index]}
-              stackId="0"
+              stackId={process === "Total" ? undefined : "0"}
+              unit="%"
+              name={process}
+              opacity={process === "Total" ? 0 : undefined}
             />
           ))}
         </AreaChart>
@@ -76,7 +114,7 @@ function GraphViewer({ data }: Props) {
       <h2>Memory Usages</h2>
       <ResponsiveContainer height="40%">
         <AreaChart
-          data={data}
+          data={parsedData}
           syncId="usages"
           margin={{ top: 5, right: 5, bottom: 10, left: 20 }}
         >
@@ -87,6 +125,7 @@ function GraphViewer({ data }: Props) {
             scale="time"
             label={{ value: "Timestamp", position: "insideBottom", offset: -5 }}
             allowDecimals={false}
+            name="Timestamp"
           />
           <YAxis
             type="number"
@@ -99,14 +138,21 @@ function GraphViewer({ data }: Props) {
             allowDecimals={false}
             unit="MB"
           />
-          <Tooltip />
-          {processes.map(([process], index) => (
+          <Tooltip
+            itemSorter={({ name }) => {
+              return -processes.indexOf(name);
+            }}
+          />
+          {processes.map((process, index) => (
             <Area
               dataKey={`processes.${process}.1`}
               type="monotone"
               stroke={colors[index]}
               fill={colors[index]}
-              stackId="1"
+              stackId={process === "Total" ? undefined : "1"}
+              unit="MB"
+              name={process}
+              opacity={process === "Total" ? 0 : undefined}
             />
           ))}
         </AreaChart>
