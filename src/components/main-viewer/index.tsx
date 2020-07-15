@@ -13,6 +13,7 @@ import Fullscreen from "../fullscreen";
 import JsonViewer from "../json-viewer";
 import DownloadButton from "../download-button";
 import "./index.scss";
+import GraphViewer from "../graph-viewer";
 
 type Props = {
   loading: boolean;
@@ -22,31 +23,44 @@ type Props = {
 
 const hiddenStyle: React.CSSProperties = { visibility: "hidden" };
 
+const renderViewer = (filename: string, data: any) => {
+  if (typeof data === "string") {
+    return filename === "profile.log" ? (
+      <GraphViewer
+        data={data
+          .slice(0, -1)
+          .split("\n")
+          .flatMap((line) => JSON.parse(line))}
+      />
+    ) : (
+      <LazyLog
+        extraLines={1}
+        enableSearch
+        text={data as string}
+        caseInsensitive
+        selectableLines
+      />
+    );
+  } else {
+    return <JsonViewer filename={filename} data={data as object} />;
+  }
+};
+
 function MainViewer({ loading, invalid, logs }: Props) {
   const [isFullscreen, setFullscreen] = useState(false);
 
-  const panes = Object.entries(logs).map(([key, value]) => {
+  const panes = Object.entries(logs).map(([filename, data]) => {
     return {
-      menuItem: key,
+      menuItem: filename,
       pane: (
         <Tab.Pane
-          key={key}
+          key={filename}
           className="main-viewer-pane"
           attached={false}
-          loading={value === undefined}
+          loading={data === undefined}
         >
-          {value ? (
-            typeof value === "string" ? (
-              <LazyLog
-                extraLines={1}
-                enableSearch
-                text={value as string}
-                caseInsensitive
-                selectableLines
-              />
-            ) : (
-              <JsonViewer filename={key} data={value as object} />
-            )
+          {data ? (
+            renderViewer(filename, data)
           ) : (
             <h2 className="main-viewer-empty-log-label">Empty log file</h2>
           )}

@@ -50,7 +50,8 @@ async function loadLogs(
         entry.name.startsWith("core") ||
         entry.name.startsWith("log") ||
         entry.name.startsWith("net") ||
-        entry.name.startsWith("state")
+        entry.name.startsWith("state") ||
+        entry.name.startsWith("profile")
     )
     .sort((a, b) => a.name.localeCompare(b.name));
   const results: any = {};
