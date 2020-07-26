@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Segment, Grid, Icon, Header, Transition } from "semantic-ui-react";
 import { useDropzone } from "react-dropzone";
 import "./index.scss";
@@ -50,6 +50,11 @@ function Homepage() {
     multiple: false,
   });
   const [loading, invalid, logs] = useLogsFromUpload(acceptedFiles?.[0]);
+  const [isHomeView, setHomeView] = useState(false);
+
+  useEffect(() => {
+    setHomeView(acceptedFiles.length === 0);
+  }, [acceptedFiles]);
 
   return (
     <>
@@ -64,7 +69,7 @@ function Homepage() {
           textAlign="center"
         >
           <Grid.Column>
-            <Transition animation="scale" transitionOnMount>
+            <Transition animation="scale" visible={isHomeView}>
               <Segment padded raised secondary>
                 <Grid columns="2" relaxed stackable verticalAlign="middle">
                   <Grid.Column>
