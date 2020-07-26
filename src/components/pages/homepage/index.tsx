@@ -1,5 +1,5 @@
 import React from "react";
-import { Container, Segment, Grid, Icon, Header } from "semantic-ui-react";
+import { Segment, Grid, Icon, Header, Transition } from "semantic-ui-react";
 import { useDropzone } from "react-dropzone";
 import "./index.scss";
 import styled from "styled-components";
@@ -52,49 +52,51 @@ function Homepage() {
   const [loading, invalid, logs] = useLogsFromUpload(acceptedFiles?.[0]);
 
   return (
-    <main>
+    <>
       {acceptedFiles.length > 0 ? (
         <MainViewer loading={loading} invalid={invalid} logs={logs} />
       ) : (
-        <div className="homepage-container">
-          <Container>
-            <Segment padded raised secondary>
-              <Grid
-                columns="2"
-                relaxed
-                stackable
-                verticalAlign="middle"
-                textAlign="center"
-              >
-                <Grid.Column>
-                  <DragNDropContainer
-                    {...getRootProps({
-                      isDragAccept,
-                      isDragActive,
-                      isDragReject,
-                    })}
-                  >
-                    <input {...getInputProps()} />
-                    <Header icon>
-                      <Icon name="file archive outline" />
-                      Drag and Drop, or Click to upload the zip file.
-                    </Header>
-                  </DragNDropContainer>
-                </Grid.Column>
-                <Grid.Column>
-                  <Icon
-                    className="homepage-icon"
-                    name="file alternate"
-                    size="massive"
-                  />
-                  <Header as="h1">Log Parser Tool</Header>
-                </Grid.Column>
-              </Grid>
-            </Segment>
-          </Container>
-        </div>
+        <Grid
+          className="homepage-container"
+          container
+          columns="1"
+          verticalAlign="middle"
+          textAlign="center"
+        >
+          <Grid.Column>
+            <Transition animation="scale" transitionOnMount>
+              <Segment padded raised secondary>
+                <Grid columns="2" relaxed stackable verticalAlign="middle">
+                  <Grid.Column>
+                    <DragNDropContainer
+                      {...getRootProps({
+                        isDragAccept,
+                        isDragActive,
+                        isDragReject,
+                      })}
+                    >
+                      <input {...getInputProps()} />
+                      <Header icon>
+                        <Icon name="file archive outline" />
+                        Drag and Drop, or Click to upload the zip file.
+                      </Header>
+                    </DragNDropContainer>
+                  </Grid.Column>
+                  <Grid.Column>
+                    <Icon
+                      className="homepage-icon"
+                      name="file alternate"
+                      size="massive"
+                    />
+                    <Header as="h1">Log Parser Tool</Header>
+                  </Grid.Column>
+                </Grid>
+              </Segment>
+            </Transition>
+          </Grid.Column>
+        </Grid>
       )}
-    </main>
+    </>
   );
 }
 

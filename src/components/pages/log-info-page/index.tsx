@@ -5,11 +5,7 @@ import MainViewer from "../../main-viewer";
 function LogInfoPage() {
   const [loading, invalid, logs] = useLogsFromUrl();
 
-  return (
-    <main>
-      <MainViewer loading={loading} invalid={invalid} logs={logs} />
-    </main>
-  );
+  return <MainViewer loading={loading} invalid={invalid} logs={logs} />;
 }
 
 export default LogInfoPage;
