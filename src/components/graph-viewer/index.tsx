@@ -7,6 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import dayjs from "dayjs";
 import "./index.scss";
 
 type DataShape = {
@@ -96,6 +97,15 @@ function GraphViewer({ data }: Props) {
             itemSorter={({ name }) => {
               return -processes.indexOf(name);
             }}
+            labelFormatter={(label) => (
+              <>
+                {label}
+                <br />
+                {dayjs
+                  .unix(parseInt(label.toString()))
+                  .format("DD/MM HH:mm:ss")}
+              </>
+            )}
           />
           {processes.map((process, index) => (
             <Area
@@ -142,6 +152,15 @@ function GraphViewer({ data }: Props) {
             itemSorter={({ name }) => {
               return -processes.indexOf(name);
             }}
+            labelFormatter={(label) => (
+              <>
+                {label}
+                <br />
+                {dayjs
+                  .unix(parseInt(label.toString()))
+                  .format("DD/MM HH:mm:ss")}
+              </>
+            )}
           />
           {processes.map((process, index) => (
             <Area
