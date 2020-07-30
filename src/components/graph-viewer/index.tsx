@@ -6,6 +6,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import dayjs from "dayjs";
 import "./index.scss";
@@ -21,23 +22,42 @@ type Props = {
   data: DataShape[];
 };
 
+type UsageStatistics = {
+  avgCpu: number;
+  highestCpu: number;
+  avgMemory: number;
+  highestMemory: number;
+};
+
 const colors = [
   "#eb9a9a",
   "#7ba6f6",
   "#f9a836",
   "#a26dc5",
   "#218747",
-  "#f76b41",
   "#3d75ea",
+  "#f76b41",
   "#ca3631",
 ];
 
 function GraphViewer({ data }: Props) {
   const [processes, setProcesses] = useState<string[]>([]);
   const [parsedData, setParsedData] = useState<DataShape[]>([]);
+  const [usageStatistics, setUsageStatistics] = useState<UsageStatistics>({
+    avgCpu: 0,
+    highestCpu: 0,
+    avgMemory: 0,
+    highestMemory: 0,
+  });
+  const { avgCpu, highestCpu, avgMemory, highestMemory } = usageStatistics;
 
   useEffect(() => {
-    // add total field
+    let highestCpu = 0;
+    let highestMemory = 0;
+    let grandTotalCpu = 0;
+    let grandTotalMemory = 0;
+
+    // compute total field
     const parsedData = data.map(
       (entry): DataShape => {
         let totalCpu = 0;
@@ -48,19 +68,35 @@ function GraphViewer({ data }: Props) {
           totalMemory += memory;
         });
 
+        totalMemory = Math.round(totalMemory * 10) / 10;
+
+        highestCpu = Math.max(highestCpu, totalCpu);
+        highestMemory = Math.max(highestMemory, totalMemory);
+        grandTotalCpu += totalCpu;
+        grandTotalMemory += totalMemory;
+
         return {
           ...entry,
           processes: {
-            Total: [totalCpu, Math.round(totalMemory * 10) / 10],
+            Total: [totalCpu, totalMemory],
             ...currentProcesses,
           },
         };
       }
     );
 
+    setParsedData(parsedData);
+
+    // compute processes
     const lastEntryProcesses = parsedData.slice(-1).pop()?.["processes"];
     lastEntryProcesses && setProcesses(Object.keys(lastEntryProcesses));
-    setParsedData(parsedData);
+
+    // compute and store highest and avg CPU/memory usages
+    const numDataPoints = parsedData.length;
+    const avgCpu = grandTotalCpu / numDataPoints;
+    const avgMemory = grandTotalMemory / numDataPoints;
+
+    setUsageStatistics({ avgCpu, highestCpu, avgMemory, highestMemory });
   }, [data]);
 
   console.log(processes);
@@ -106,6 +142,20 @@ function GraphViewer({ data }: Props) {
                   .format("DD/MM HH:mm:ss")}
               </>
             )}
+          />
+          <ReferenceLine
+            y={highestCpu}
+            label="Max"
+            stroke="#ca3631"
+            strokeWidth="2"
+            alwaysShow
+          />
+          <ReferenceLine
+            y={avgCpu}
+            label="Avg"
+            stroke="#f76b41"
+            strokeWidth="2"
+            alwaysShow
           />
           {processes.map((process, index) => (
             <Area
@@ -161,6 +211,20 @@ function GraphViewer({ data }: Props) {
                   .format("DD/MM HH:mm:ss")}
               </>
             )}
+          />
+          <ReferenceLine
+            y={highestMemory}
+            label="Max"
+            strokeWidth="2"
+            stroke="#ca3631"
+            alwaysShow
+          />
+          <ReferenceLine
+            y={avgMemory}
+            label="Avg"
+            strokeWidth="2"
+            stroke="#f76b41"
+            alwaysShow
           />
           {processes.map((process, index) => (
             <Area
