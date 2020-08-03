@@ -30,7 +30,7 @@ const renderViewer = (filename: string, data: any) => {
         data={data
           .slice(0, -1)
           .split("\n")
-          .flatMap((line) => JSON.parse(line))}
+          .map((line) => JSON.parse(line))}
       />
     ) : (
       <LazyLog
@@ -55,7 +55,11 @@ function MainViewer({ loading, invalid, logs }: Props) {
       pane: (
         <Tab.Pane
           key={filename}
-          className="main-viewer-pane"
+          className={
+            filename === "profile.log"
+              ? "main-viewer-pane-graph"
+              : "main-viewer-pane"
+          }
           attached={false}
           loading={data === undefined}
         >

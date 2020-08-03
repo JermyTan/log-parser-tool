@@ -70,7 +70,6 @@ async function loadLogs(
       }
       results[fileName] = data;
       setLogs({ ...results });
-      //console.log("Number of lines:", data.split("\n").length);
       console.log(results);
     });
   });

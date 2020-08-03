@@ -81,7 +81,6 @@ const computeJumpIndexes = (data: any, dataLines: DataLine[]): any => {
     });
   }
 
-  //console.log("jump indexes", jumpIndexes.length);
   return jumpIndexes;
 };
 
@@ -333,8 +332,6 @@ function JsonViewer({ filename, data }: Props) {
     console.log("process json");
     setSelectedJumpIndex(1, () => processJson(activeFilter, filters));
   }, [filters, activeFilter]);
-
-  //console.log(filters.length);
 
   const handleArrowClick = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
