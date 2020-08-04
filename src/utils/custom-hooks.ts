@@ -112,7 +112,7 @@ export function useLogsFromUrl(): [boolean, boolean, any] {
 
   useEffect(() => {
     const url = query.get(URL_QUERY);
-    const proxyServerUrl = "https://jeremy-cors-anywhere-server.herokuapp.com";
+    const proxyServerUrl = "https://cors-anywhere-server.herokuapp.com";
     console.log("Download url:", url);
     console.log("Proxy server url:", proxyServerUrl);
     if (url) {
