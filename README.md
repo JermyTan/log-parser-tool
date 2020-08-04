@@ -1,4 +1,18 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Setup
+
+### `yarn install`
+
+To install all app dependencies.
+
+## Deploy
+
+To deploy, run:
+
+### `yarn build`
+
+then, run:
+
+### `firebase deploy`
 
 ## Available Scripts
 
